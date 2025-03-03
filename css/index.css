@@ -10,35 +10,49 @@ body {
     height: 85px;
 }
 
-h1 {
+.forum {
     color: white;
     margin-left: 2%;
     font-size: 3em;
     display: flex;
     margin-top: 1%;
-    margin-left: 3%;
+    margin-left: 4.5%;
+    text-decoration: none;
 }
 
-h2 {
+.topics {
     color: white;
     display: flex;
     margin-top: 1.5%;
-    margin-left: 6%;
+    margin-left: 8%;
     font-size: 2.3em;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out; /* Animation douce pour le survol */
+            animation: neon-flicker 1.5s infinite;
 }
 
 .liste {
     color: white;
     display: flex;
     margin-top: 1.5%;
-    margin-left: 6%;
+    margin-left: 8%;
     font-size: 2.3em;
+    text-decoration: none;
 }
 
 .Utilisateurs {
     color: white;
     display: flex;
     margin-top: 1.5%;
-    margin-left: 6%;
+    margin-left: 8%;
     font-size: 2.3em;
+    text-decoration: none;
+}
+
+.login {
+    color: white;
+    display: flex;
+    margin-top: -1.6%;
+    margin-left: 6%;
+    font-size: 2.2em;
 }
