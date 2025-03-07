@@ -20,6 +20,14 @@ body {
     text-decoration: none;
 }
 
+.forum:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
+}
+
 .topics {
     color: white;
     display: flex;
@@ -29,6 +37,13 @@ body {
     text-decoration: none;
     transition: all 0.3s ease-in-out; /* Animation douce pour le survol */
             animation: neon-flicker 1.5s infinite;
+}
+.topics:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
 }
 
 .liste {
@@ -40,6 +55,14 @@ body {
     text-decoration: none;
 }
 
+.liste:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
+}
+
 .Utilisateurs {
     color: white;
     display: flex;
@@ -49,10 +72,26 @@ body {
     text-decoration: none;
 }
 
+.Utilisateurs:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
+}
+
 .login {
     color: white;
     display: flex;
     margin-top: -1.6%;
     margin-left: 6%;
     font-size: 2.2em;
+}
+
+.login:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
 }
