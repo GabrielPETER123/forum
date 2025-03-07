@@ -1,5 +1,5 @@
 body {
-    background-color: rgb(116, 7, 7);
+    background-image: url(../assets/biere.jpg);
 }
 
 .header {
@@ -96,3 +96,22 @@ body {
 
 }
 
+.box {
+    width: 1250px;
+    height: 1350px;
+    background-color: rgb(98, 98, 100);
+    color: transparent;
+    display: flex;
+    justify-content: flex;
+    align-items: flex;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 30px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-top: 6%;
+    margin-left: 13.5%;
+    gap: 10px;
+    flex-direction: row;
+
+}
