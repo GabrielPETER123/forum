@@ -15,5 +15,29 @@
         <a href="../html/userActif.html" class="Utilisateurs">Utilisateurs les plus actifs</a>
         <a href="../html/connexion.html" class="login"><h2><i class="fa-regular fa-user"></i></h2></a> 
     </div>
+
+    <div>
+        <form method="post" onsubmit="openForm(); return false;">
+            <Button>Créer un Post</Button>
+        </form>
+
+        <div id="postForm" style="display:none;">
+            <textarea placeholder="Écrire votre post ici..."></textarea>
+            <button type="submit" id="textPost">Publier</button>
+            <button type="button" onclick="closeForm()">Fermer</button>
+        </div>
+
+        <script>
+            function openForm() {
+            document.getElementById('postForm').style.display = 'block';
+            }
+
+            function closeForm() {
+            document.getElementById('postForm').style.display = 'none';
+            }
+        </script>
+    </div>
+
+
 </body>
 </html>
