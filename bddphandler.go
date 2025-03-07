@@ -40,7 +40,6 @@ func InitializeDB(dbName string) (*sql.DB, error) {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`
 
-    // Table posts
     createPostsTable := `CREATE TABLE IF NOT EXISTS posts (
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
