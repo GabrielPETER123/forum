@@ -21,6 +21,8 @@ type User struct {
 	Email   string
 }
 
+
+//* Fonction qui écrit dans la base de données
 func PostDataBase (postSend Post){
 	fmt.Println("Opening database connection...")
 	db, err := gorm.Open(sqlite.Open("post.db"), &gorm.Config{})
