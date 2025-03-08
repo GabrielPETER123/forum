@@ -4,8 +4,19 @@ import (
   "fmt"
   "net/http"
   "html/template"
-  "github.com/GabrielPETER123/Forum/database"
+  "forum/golang"
 )
+
+
+var postSend = golang.Post{
+  Title: "test",
+  User: golang.User{
+    Username: "test1.1", 
+    Email: "test1.2", 
+    Password: "test1.3",
+  },
+  Text: "test3",
+}
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("index.html"))
@@ -24,10 +35,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-  database.DataBase()
-  
-  http.HandleFunc("/", indexHandler)
+  fmt.Println("Starting database...")
+  golang.PostDataBase(postSend)
+  fmt.Println("Database ended.")
+/*   http.HandleFunc("/", indexHandler)
   http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
-  fmt.Println("(http://localhost:8080/)")
-  http.ListenAndServe(":8080", nil)
+	fmt.Println("(http://localhost:8080/)")
+	http.ListenAndServe(":8080", nil) */
 }
