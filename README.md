@@ -1,2 +1,2 @@
 # forum
-je déteste rodrigo et j'espère qu'il verra ce message
+je déteste gabriel j'espère qu'il verra pas le message
