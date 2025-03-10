@@ -4,12 +4,12 @@ import (
     "database/sql"
     "fmt"
     "log"
+    "os"
     "time"
 
     _ "github.com/mattn/go-sqlite3"
 )
 
-// Struct pour user (gabriel nul)
 type User struct {
     ID        int
     Username  string
@@ -17,7 +17,6 @@ type User struct {
     CreatedAt time.Time
 }
 
-// Struct pour post forum (rodrigo nul)
 type Post struct {
     ID        int
     UserID    int
@@ -59,7 +58,6 @@ func InitializeDB(dbName string) (*sql.DB, error) {
         FOREIGN KEY (user_id) REFERENCES users(id)
     );`
 
-    // exéc de création des tables (faut pas être con c'est marqué exéc c'est juste moi)
     for _, tableSQL := range []string{createUsersTable, createPostsTable, createCommentsTable} {
         if _, err := db.Exec(tableSQL); err != nil {
             return nil, fmt.Errorf("failed to create table: %v", err)
@@ -124,20 +122,17 @@ func AddComment(db *sql.DB, postID, userID int, content string) error {
 }
 
 func DeletePost(db *sql.DB, postID, userID int) error {
-    // ça vérif si l'user c'est bien le créateur du post
     tx, err := db.Begin()
     if err != nil {
         return fmt.Errorf("failed to begin transaction: %v", err)
     }
 
-    // là ça delete les coms
     _, err = tx.Exec(`DELETE FROM comments WHERE post_id = ?`, postID)
     if err != nil {
         tx.Rollback()
         return fmt.Errorf("failed to delete comments: %v", err)
     }
 
-    // là ça delete le post
     result, err := tx.Exec(`DELETE FROM posts WHERE id = ? AND user_id = ?`, postID, userID)
     if err != nil {
         tx.Rollback()
@@ -162,4 +157,68 @@ func CloseDB(db *sql.DB) {
     if err := db.Close(); err != nil {
         log.Printf("Error closing database: %v", err)
     }
+}
+
+func ExportDataToFile(db *sql.DB, filename string) error {
+    file, err := os.Create(filename)
+    if err != nil {
+        return fmt.Errorf("failed to create file: %v", err)
+    }
+    defer file.Close()
+
+    rows, err := db.Query("SELECT id, username, email, created_at FROM users")
+    if err != nil {
+        return fmt.Errorf("failed to query users: %v", err)
+    }
+    defer rows.Close()
+
+    file.WriteString("Users:\n")
+    for rows.Next() {
+        var user User
+        err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt)
+        if err != nil {
+            return fmt.Errorf("failed to scan user: %v", err)
+        }
+        file.WriteString(fmt.Sprintf("ID: %d, Username: %s, Email: %s, CreatedAt: %s\n", user.ID, user.Username, user.Email, user.CreatedAt))
+    }
+
+    rows, err = db.Query("SELECT id, user_id, title, content, created_at FROM posts")
+    if err != nil {
+        return fmt.Errorf("failed to query posts: %v", err)
+    }
+    defer rows.Close()
+
+    file.WriteString("\nPosts:\n")
+    for rows.Next() {
+        var post Post
+        err := rows.Scan(&post.ID, &post.UserID, &post.Title, &post.Content, &post.CreatedAt)
+        if err != nil {
+            return fmt.Errorf("failed to scan post: %v", err)
+        }
+        file.WriteString(fmt.Sprintf("ID: %d, UserID: %d, Title: %s, Content: %s, CreatedAt: %s\n", post.ID, post.UserID, post.Title, post.Content, post.CreatedAt))
+    }
+
+    rows, err = db.Query("SELECT id, post_id, user_id, content, created_at FROM comments")
+    if err != nil {
+        return fmt.Errorf("failed to query comments: %v", err)
+    }
+    defer rows.Close()
+
+    file.WriteString("\nComments:\n")
+    for rows.Next() {
+        var comment struct {
+            ID        int
+            PostID    int
+            UserID    int
+            Content   string
+            CreatedAt time.Time
+        }
+        err := rows.Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.Content, &comment.CreatedAt)
+        if err != nil {
+            return fmt.Errorf("failed to scan comment: %v", err)
+        }
+        file.WriteString(fmt.Sprintf("ID: %d, PostID: %d, UserID: %d, Content: %s, CreatedAt: %s\n", comment.ID, comment.PostID, comment.UserID, comment.Content, comment.CreatedAt))
+    }
+
+    return nil
 }
