@@ -14,17 +14,12 @@ type Post struct {
 	Text   string
 }
 
-type User struct {
-	gorm.Model
-	Username  string
-	Password string
-	Email   string
-}
+
 
 //* Fonction qui écrit dans la base de données
-func PostDataBase (postSend Post){
+func AddPostInDataBase (postSend Post){
 	fmt.Println("Opening database connection...")
-	db, err := gorm.Open(sqlite.Open("post.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

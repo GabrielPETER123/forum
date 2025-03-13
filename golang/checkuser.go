@@ -6,13 +6,7 @@ import (
 	"gorm.io/driver/sqlite"
 )
 
-type User struct {
-	gorm.Model
-	Username  string
-	Password string
-	Email   string
-}
-func AddUserInDataBase (userSend User){
+func CheckUser(nameOrMail string, password string) bool{
 	fmt.Println("Opening database connection...")
 	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
 	if err != nil {
@@ -25,8 +19,12 @@ func AddUserInDataBase (userSend User){
 	db.AutoMigrate(&User{})
 	fmt.Println("Schema migrated.")
 
-	//* Création du Post
-	fmt.Println("Creating user...")
-	db.Create(&userSend)
-	fmt.Println("User created.")
+	//* Lecture de la base de données
+	var user User
+	if err := db.First(&user, "Username = ? AND Password = ?", nameOrMail, password).Error; err == nil {
+		fmt.Print("L'utilisateur est présent dans la base de données\n")
+		return true
+	}
+	fmt.Print("L'utilisateur n'est pas présent dans la base de données\n")
+	return false
 }
