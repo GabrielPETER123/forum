@@ -41,7 +41,7 @@ h2{
     color: white;
     font-size: 1.9em;
     display: flex;
-    margin-top: -2%;
+    margin-top: -1%;
     margin-left: 35%;
 
 }
@@ -49,6 +49,59 @@ h2{
 .connexion {
     margin-right: 30%;
     font-size: 1.2em;
-    margin-top: -1%;
+    margin-top: 1%;
+    
 
+}
+.login-container {
+    width: 400px;
+    padding: 30px;
+    font-size: 18px;
+    margin-left: 33%;
+    margin-top: -5%;
+    background-color: transparent;
+    
+
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    font-size: 18px;
+    color: white;
+
+}
+
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 18px;
+
+}
+
+button {
+    margin-top: 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 3%;
+
+}
+
+button:hover {
+    background-color: #0056b3;
+
+}
+
+.nouveau {
+    display: flex;
+    color: wheat;
+    margin-left: 0%;
+    margin-top: 0%;
+    
+    
 }
