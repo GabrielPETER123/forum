@@ -36,6 +36,7 @@ func PostDataBase (postSend Post){
 	fmt.Println("Schema migrated.")
 
 	//* Lecture de la base de données
+	//! TEST si le texte est déjà présent dans la base de données
 	var post Post
 	if err := db.First(&post, "Text = ?", postSend.Text).Error; err == nil {
 		fmt.Print("Le texte est déjà présent dans la base de données\n")
