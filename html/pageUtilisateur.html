@@ -19,10 +19,15 @@
 
     <!-- CONTENU -->
      <div>
+        VOS POSTS
         {{range .Posts}}
             <div class="post">
-                <h2>{{.Title}}</h2>
-                <p>{{.Text}}</p>
+                <h2>Titre : {{.Title}}</h2>
+                <p>Contenue : {{.Text}}</p>
+            <form method="post" action="../pageUtilisateur">
+                <input type="hidden" name="deletePost" value="{{.ID}}">
+                <button type="submit">Supprimer</button>
+            </form>
             </div>
         {{else}}
             <p>No posts found.</p>

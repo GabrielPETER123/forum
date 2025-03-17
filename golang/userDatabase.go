@@ -11,7 +11,9 @@ type User struct {
 	Username  string
 	Password string
 	Email   string
+	Admin bool
 }
+
 func AddUserInDataBase (userSend User){
 	fmt.Println("Opening database connection...")
 	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})

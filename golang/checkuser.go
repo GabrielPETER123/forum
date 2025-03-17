@@ -14,11 +14,6 @@ func CheckUser(nameOrMail string) bool{
 	}
 	fmt.Println("Database connection opened.")
 
-	//* Migation du schéma
-	fmt.Println("Migrating schema...")
-	db.AutoMigrate(&User{})
-	fmt.Println("Schema migrated.")
-
 	//* Lecture de la base de données
 	var user User
 	if err := db.First(&user, "Username = ?", nameOrMail).Error; err == nil {

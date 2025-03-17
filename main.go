@@ -7,6 +7,7 @@ import (
   "forum/golang"
   "regexp"
   "strconv"
+  "golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 )
 
 type IndexDisplay struct {
-  Posts []golang.Post
+  ErrIndexMessage string
 }
 type ConnexionDisplay struct {
   ErrConnexionMessage string
@@ -29,34 +30,19 @@ type InscriptionDisplay struct {
 
 type PageUtilisateurDisplay struct {
   Posts []golang.Post
+  Username string
 }
 
 //* Fonction qui gère la page d'accueil
 func indexHandler(w http.ResponseWriter, r *http.Request) {
   indexDisplay := IndexDisplay{}
-  var posts []golang.Post
   tmpl := template.Must(template.ParseFiles("html/index.html"))
 
   if r.Method == http.MethodGet {
-
-    //? Retrieve user data from cookies PAS SUR
-    userCookie, err := r.Cookie("User")
-    if err == nil {
-
-      fmt.Println("User:", userCookie.Value)
-      userID, _ := strconv.Atoi(userCookie.Value)
-      //* Récupère les posts de l'utilisateur
-      posts := golang.GetPostsByUserID(userID)
-      for _, post := range posts {
-        fmt.Println("Post:", post.Title, post.Text)
-      }
-    }
-    //* Affiche les posts
-    indexDisplay.Posts = posts
     tmpl.Execute(w, indexDisplay)
     
-  }else{
-
+  } 
+  if r.Method == http.MethodPost {
     err := r.ParseForm()
     if err != nil {
       http.Error(w, "Error parsing form.", http.StatusBadRequest)
@@ -75,25 +61,38 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
     //* Réccupère l'ID de l'utilisateur des cookies
     userCookie, err := r.Cookie("UserID")
     if err == nil {
-      userID, _ := strconv.Atoi(userCookie.Value)
-      postSend.UserID = uint(userID)
+      userID, err := strconv.Atoi(userCookie.Value)
+      if err == nil {
+        postSend.UserID = uint(userID)
+      }
+    } else {
+      fmt.Println("Error retrieving user cookie:", err)
     }
 
-    //* Écris dans la base de données si le titre ou le contenu n'est pas vide
-    if title != "" || content != "" {
-    fmt.Println("AddPostInDataBase database...")
-    golang.AddPostInDataBase(postSend)
-    fmt.Println("AddPostInDataBase ended.")
+    //* Vérifie si l'utilisateur est connecté
+    if userCookie != nil && userCookie.Value != "" {
+      //* Écris dans la base de données si le titre ou le contenu n'est pas vide
+      if title != "" || content != "" {
+        fmt.Println("AddPostInDataBase database...")
+        golang.AddPostInDataBase(postSend)
+        fmt.Println("AddPostInDataBase ended.")
+      }
+    } else {
+      errIndexMessage := "Connectez vous pour poster !"
+      indexDisplay.ErrIndexMessage = errIndexMessage
+      fmt.Println(errIndexMessage)
     }
-    tmpl.Execute(w, nil)
+    
+    tmpl.Execute(w, indexDisplay)
   }
 }
   
-
 //* Fonction qui gère la page de connexion
 func connexionHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/connexion.html"))
   if r.Method == http.MethodGet {
+    tmpl.Execute(w, connexionDisplay)
+    return
   }
   if r.Method == http.MethodPost {
     err := r.ParseForm()
@@ -101,12 +100,31 @@ func connexionHandler(w http.ResponseWriter, r *http.Request) {
       http.Error(w, "Error parsing form.", http.StatusBadRequest)
       return
     }
+
+    //* Vérifie si l'utilisateur veut se déconnecter
+    logout := r.FormValue("logout")
+    fmt.Println("Logout:", logout)
+    if logout == "true" {
+      //* Vide le cookie de l'utilisateur
+      userCookie := http.Cookie{
+        Name:   "UserID",
+        Value:  "",
+        Path:   "/",
+        MaxAge: -1, //? Durée de vie du cookie
+      }
+      http.SetCookie(w, &userCookie)
+      http.Redirect(w, r, "/", http.StatusSeeOther)
+      return
+    }
+
     nameOrMail := r.FormValue("nameOrMail")
     password := r.FormValue("password")
     
     //! Erreur si le nom, le mail ou le mot de passe est vide
     if nameOrMail == "" || password == "" {
-      errConnexion += "Nom, Email ou Mot de passe vide.\n"
+      errConnexion = "Nom, Email ou Mot de passe vide.\n"
+      connexionDisplay.ErrConnexionMessage += errConnexion
+      tmpl.Execute(w, connexionDisplay)
       return
     }
 
@@ -120,18 +138,23 @@ func connexionHandler(w http.ResponseWriter, r *http.Request) {
         Path:  "/",
       }
       http.SetCookie(w, &userCookie)
+      http.Redirect(w, r, "/", http.StatusSeeOther)
+      return
     } else {
       errConnexion = "Nom ou Email incorrect.\n"
       fmt.Println(errConnexion)
+      connexionDisplay.ErrConnexionMessage += errConnexion
     }
-    connexionDisplay.ErrConnexionMessage += errConnexion
   }
   tmpl.Execute(w, connexionDisplay)
 }
 
+//* Fonction qui gère la page d'inscription
 func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/inscription.html"))
   if r.Method == http.MethodGet {
+    tmpl.Execute(w, inscriptionDisplay)
+    return
   }
   if r.Method == http.MethodPost {
     err := r.ParseForm()
@@ -171,7 +194,14 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
       var userSend = golang.User{}
       userSend.Username = username
       userSend.Email = email
-      userSend.Password = password
+
+      //* Hash the password
+      hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+      if err != nil {
+        http.Error(w, "Error hashing password.", http.StatusInternalServerError)
+        return
+      }
+      userSend.Password = string(hashedPassword)
 
       //* Écris dans la base de données le User
       fmt.Println("Starting AddUserInDataBase...")
@@ -186,25 +216,45 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
   tmpl.Execute(w, inscriptionDisplay)   
 }
 
+//* Fonction qui gère la page de l'utilisateur
 func pageUtilisateurHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/pageUtilisateur.html"))
+  var pageUtilisateurDisplay PageUtilisateurDisplay
+  if r.Method == http.MethodGet {
     userCookie, err := r.Cookie("UserID")
     if err == nil {
       userID, _ := strconv.Atoi(userCookie.Value)
       fmt.Println("User ID:", userID)
-
+  
       //* Récupère les posts de l'utilisateur
       posts := golang.GetPostsByUserID(userID)
-      pageUtilisateurDisplay := PageUtilisateurDisplay{Posts: posts}
-      tmpl.Execute(w, pageUtilisateurDisplay)
-    } else {
-      http.Error(w, "User not logged in", http.StatusUnauthorized)
+      pageUtilisateurDisplay = PageUtilisateurDisplay{Posts: posts}
+
+      user := golang.GetUserByID(userID)
+      if user.Username != "" {
+        pageUtilisateurDisplay.Username = user.Username
+      } else {
+        http.Error(w, "Connectez vous pour voir vos Post !", http.StatusUnauthorized)
+      }
     }
+    tmpl.Execute(w, pageUtilisateurDisplay)
+  }
+  if r.Method == http.MethodPost {
+    r.ParseForm()
+    deletePostID, err := strconv.Atoi(r.FormValue("deletePost"))
+    if err != nil {
+        return
+    }
+    golang.DeletePost(deletePostID)
+    http.Redirect(w, r, "/pageUtilisateur", http.StatusSeeOther)
+    tmpl.Execute(w, pageUtilisateurDisplay)
+  }
 }
 
-
-
 func main() {
+
+  golang.CreateAdminUser()
+  
   http.HandleFunc("/", indexHandler)
   http.HandleFunc("/connexion", connexionHandler)
   http.HandleFunc("/inscription", inscriptionHandler)

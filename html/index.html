@@ -19,11 +19,16 @@
 
         <!-- POST SUR LE FORUM -->
         <div id="postForm">
+            <h1>Créer un post</h1>
             <form method="post">
                 <textarea id="title" name="title" placeholder="Titre de votre post..."></textarea>
                 <textarea id="content" name="content" placeholder="Écrire votre post ici..."></textarea>
                 <button type="submit" id="textPost">Publier</button>
             </form>
+            <br>
+            <p>
+                {{.ErrIndexMessage}}
+            </p>
         </div>
 
     </body>

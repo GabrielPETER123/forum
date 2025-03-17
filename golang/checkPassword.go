@@ -1,9 +1,10 @@
 package golang
 
 import (
-	"fmt"
-	"gorm.io/gorm"
-	"gorm.io/driver/sqlite"
+    "fmt"
+    "gorm.io/gorm"
+    "gorm.io/driver/sqlite"
+    "golang.org/x/crypto/bcrypt"
 )
 
 func CheckUserPassword(nameOrMail, password string) (User, bool) {
@@ -17,7 +18,9 @@ func CheckUserPassword(nameOrMail, password string) (User, bool) {
     //* Regarde si l'utilisateur est présent dans la base de données
     var user User
     if err := db.Where("username = ? OR email = ?", nameOrMail, nameOrMail).First(&user).Error; err == nil {
-        if user.Password == password {
+        //* Compare le mot de passe avec le hash password
+        err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+        if err == nil {
             return user, true
         }
     }
