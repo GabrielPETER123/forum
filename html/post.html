@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../css/index.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+        <title>forum</title>
+    </head>
+    <body>
+        <div class="header">
+            <a href="../" class="forum">Forum</a>
+            <a href="../listeTopics" class="topics">Topics Tendances</a>
+            <a href="../listeTopics" class="liste">Liste des Topics</a>
+            <a href="../userActif" class="Utilisateurs">Utilisateurs les plus actifs</a>
+            <a href="../pageUtilisateur">Page Utilisateur</a>
+            <a href="../connexion" class="login"><h2><i class="fa-regular fa-user"></i></h2></a> 
+        </div>
+
+        <!-- POST AFFICHÉ -->
+
+        <div>
+            <h1>Post</h1>
+
+            <div class="post">
+                <p>ID du Post : {{.Post.ID}}</p>
+                <h2>Titre : {{.Post.Title}}</h2>
+                <p>Contenue : {{.Post.Text}}</p>
+                <p>
+                    Créer par : {{.Post.User.Username}}
+                    <br>
+                    Id de l'utilisateur : {{.Post.User.ID}}
+                    <br>
+                    Créer le : {{.Post.FormattedCreationDate}}.
+                    <br>
+                    Dernière modification le : {{.Post.FormattedUpdatedDate}}.
+                </p>
+
+                <div class="vote-display"></div>
+                    <span class="upvote"><i class="fas fa-thumbs-up"></i> {{.Post.TotalUp}}</span>
+                    <span class="downvote"><i class="fas fa-thumbs-down"></i> {{.Post.TotalDown}}</span>
+                </div>
+                
+                <div class="comment-list">
+                {{range .Post.Comments}}
+                    <div class="comment">
+                        <p>{{.Text}}</p>
+                        <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
+                    </div>
+                {{end}}
+                </div>
+
+                <div class="comment-form">
+                <form method="post">
+                    <input type="hidden" name="postId" value="{{.ID}}">
+                    <textarea name="text" placeholder="Votre commentaire"></textarea>
+                    <button type="submit">Commenter</button>
+                </form>
+                </div>
+
+            </div>
+        </div>
+
+
+
+    </body>
+</html>

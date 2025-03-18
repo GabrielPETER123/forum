@@ -34,20 +34,29 @@ type PageUtilisateurDisplay struct {
   Username string
 }
 
+type PostDisplay struct {
+  Post golang.Post
+}
+
+type ListTopicDisplay struct {
+  Topics []golang.Topic
+  ErrListTopicMessage string
+  MessageAddTopic string
+}
+
+type TopicDisplay struct {
+  Topic golang.Topic
+}
+
+//!-----------------------------------------------------------------------------------------
+
 //* Fonction qui gère la page d'accueil
 func indexHandler(w http.ResponseWriter, r *http.Request) {
   indexDisplay := IndexDisplay{}
   tmpl := template.Must(template.ParseFiles("html/index.html"))
 
-
-  //* Formate les dates pour la lisibilité
-  for i := range indexDisplay.Posts {
-    indexDisplay.Posts[i].FormattedCreationDate = indexDisplay.Posts[i].CreatedAt.Format("02 January 2006 15:04")
-    indexDisplay.Posts[i].FormattedUpdatedDate = indexDisplay.Posts[i].UpdatedAt.Format("02 January 2006 15:04")
-  }
-
   if r.Method == http.MethodGet {
-    //* Récupère les posts de la base de données
+    //* Récupère les posts de la base de données et Formate les dates pour la lisibilité
     posts := golang.GetAllPosts()
     for i := range posts {
       posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
@@ -116,14 +125,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
       fmt.Println(errIndexMessage)
     }
     
-    //* Récupère les posts pour mettre à jour les votes
+    //* Récupère les posts pour mettre à jour les votes et formatte les dates
     posts := golang.GetAllPosts()
     for i := range posts {
       posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
     }
     indexDisplay.Posts = posts
-
-
     
     tmpl.Execute(w, indexDisplay)
   }
@@ -293,6 +300,119 @@ func pageUtilisateurHandler(w http.ResponseWriter, r *http.Request) {
   }
 }
 
+//* Fonction qui gère la page d'un post
+func postHandler(w http.ResponseWriter, r *http.Request) {
+  tmpl := template.Must(template.ParseFiles("html/post.html"))
+  postDisplay := PostDisplay{}
+
+  if r.Method == http.MethodGet {
+        //* Récupère le postId dans l'URL
+        postIdStr := r.URL.Query().Get("postId")
+        if postIdStr == "" {
+            http.Error(w, "Missing postId query parameter", http.StatusBadRequest)
+            return
+        }
+    
+        postId, err := strconv.Atoi(postIdStr)
+        if err != nil {
+            http.Error(w, "Invalid postId query parameter", http.StatusBadRequest)
+            return
+        }
+    
+        //* Va chercher le post dans la base de données
+        post := golang.GetPostByPostID(postId)
+        
+        post.TotalUp, post.TotalDown = golang.Totals(post.ID)
+
+        postDisplay.Post = post
+        tmpl.Execute(w, postDisplay)
+  }
+
+  if r.Method == http.MethodPost {
+    tmpl.Execute(w, postDisplay)
+  }
+}
+
+func listTopicsHandler(w http.ResponseWriter, r *http.Request) {
+  tmpl := template.Must(template.ParseFiles("html/listTopics.html"))
+  var topics ListTopicDisplay
+
+  if r.Method == http.MethodGet {
+    topics.Topics = golang.GetAllTopics()
+    tmpl.Execute(w, topics)
+  }
+
+  if r.Method == http.MethodPost {
+    err := r.ParseForm()
+    if err != nil {
+      http.Error(w, "Error parsing form.", http.StatusBadRequest)
+      return
+    }
+
+    nameTopic := r.FormValue("nameTopic")
+    description := r.FormValue("description")
+
+    //* Vérifie si le nom du topic ou la description est vide
+    if nameTopic == "" || description == "" {
+      topics.ErrListTopicMessage = "Nom du topic ou description vide."
+      tmpl.Execute(w, topics)
+      return
+    } else {
+
+
+      //* Récupère l'utilisateur
+      userCookie, err := r.Cookie("UserID")
+      if err != nil {
+        return
+      }
+      userID, err := strconv.Atoi(userCookie.Value)
+      if err != nil {
+        return
+      }
+      user := golang.GetUserByID(userID)
+
+      //* Ajoute le topic dans la base de données
+      result := golang.AddTopic(nameTopic, description, user)
+      if result != "Topic created" {
+        topics.ErrListTopicMessage = result
+        tmpl.Execute(w, topics)
+        return
+      } else {
+        topics.MessageAddTopic = "Topic créé."
+      }
+    }
+    //* Récupère les topics
+    topics.Topics = golang.GetAllTopics()
+
+    tmpl.Execute(w, topics)
+  }
+
+}
+
+func topicHandler(w http.ResponseWriter, r *http.Request) {
+  tmpl := template.Must(template.ParseFiles("html/topic.html"))
+  topic := TopicDisplay{}
+  if r.Method == http.MethodGet {
+
+    //* Récupère le topicID dans l'URL
+    topicIDStr := r.URL.Query().Get("topicId")
+    if topicIDStr == "" {
+      return
+    }
+    topicID, err := strconv.Atoi(topicIDStr)
+    if err != nil {
+      return
+    }
+    topic.Topic = golang.GetTopic(topicID)
+    
+    tmpl.Execute(w, topic)
+  }
+  if r.Method == http.MethodPost {
+
+
+    tmpl.Execute(w, nil)
+  }
+}
 func main() {
 
   golang.CreateAdminUser()
@@ -301,6 +421,9 @@ func main() {
   http.HandleFunc("/connexion", connexionHandler)
   http.HandleFunc("/inscription", inscriptionHandler)
   http.HandleFunc("/pageUtilisateur", pageUtilisateurHandler)
+  http.HandleFunc("/post", postHandler)
+  http.HandleFunc("/listTopics", listTopicsHandler)
+  http.HandleFunc("/topic", topicHandler)
   http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
 	fmt.Println("http://localhost:8080/")
 	http.ListenAndServe(":8080", nil)

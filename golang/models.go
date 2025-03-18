@@ -8,9 +8,9 @@ import (
 
 type User struct {
     gorm.Model
-    Username string
-    Password string
-    Email    string
+    Username string `gorm:"size:255;not null;unique"`
+    Email    string `gorm:"size:255;not null;unique"`
+    Password string `gorm:"size:255;not null"`
     Admin    bool
     Posts    []Post
 }
@@ -18,14 +18,17 @@ type User struct {
 type Post struct {
     gorm.Model
     Title                 string
-    Text                  string
+    Text                  string `gorm:"size:255;not null"`
     UserID                uint
     User                  User
-    FormattedCreationDate string
-    FormattedUpdatedDate  string
-    TotalUp               int
-    TotalDown             int
+    FormattedCreationDate string `gorm:"-"`
+    FormattedUpdatedDate  string `gorm:"-"`
+    TotalUp               uint
+    TotalDown             uint
     Votes                 []Vote `gorm:"foreignKey:PostID"`
+    Comments              []Post `gorm:"foreignKey:ParentID"`
+    ParentID              uint   `gorm:"default:null"`
+    TopicID               uint   `gorm:"not null"`
 }
 
 type Vote struct {
@@ -36,3 +39,13 @@ type Vote struct {
     Down  int
 }
 
+type Topic struct {
+    gorm.Model
+    Name        string `gorm:"size:255;not null;unique"`
+    Description string `gorm:"size:255"`
+    UserID      uint   `gorm:"not null"`
+    User        User   `gorm:"foreignKey:UserID"`
+    FormattedCreationDate string `gorm:"-"`
+    FormattedUpdatedDate  string `gorm:"-"`
+    Posts       []Post `gorm:"foreignKey:TopicID"`
+}
