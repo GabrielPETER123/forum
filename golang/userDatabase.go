@@ -1,34 +1,26 @@
 package golang
 
 import (
-	"fmt"
+	// "fmt"
 	"gorm.io/gorm"
 	"gorm.io/driver/sqlite"
 )
 
-type User struct {
-	gorm.Model
-	Username  string
-	Password string
-	Email   string
-	Admin bool
-}
-
 func AddUserInDataBase (userSend User){
-	fmt.Println("Opening database connection...")
+	// fmt.Println("Opening database connection...")
 	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
-	fmt.Println("Database connection opened.")
+	// fmt.Println("Database connection opened.")
 
 	//* Migation du schéma
-	fmt.Println("Migrating schema...")
+	// fmt.Println("Migrating schema...")
 	db.AutoMigrate(&User{})
-	fmt.Println("Schema migrated.")
+	// fmt.Println("Schema migrated.")
 
 	//* Création du Post
-	fmt.Println("Creating user...")
+	// fmt.Println("Creating user...")
 	db.Create(&userSend)
-	fmt.Println("User created.")
+	// fmt.Println("User created.")
 }

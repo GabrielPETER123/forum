@@ -4,6 +4,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+//* création de l'utilisateur admin
 func CreateAdminUser() {
 	if CheckUser("admin") {
 		return

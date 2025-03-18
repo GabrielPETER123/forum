@@ -18,6 +18,7 @@ var (
 )
 
 type IndexDisplay struct {
+  Posts []golang.Post
   ErrIndexMessage string
 }
 type ConnexionDisplay struct {
@@ -38,10 +39,24 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
   indexDisplay := IndexDisplay{}
   tmpl := template.Must(template.ParseFiles("html/index.html"))
 
+
+  //* Formate les dates pour la lisibilité
+  for i := range indexDisplay.Posts {
+    indexDisplay.Posts[i].FormattedCreationDate = indexDisplay.Posts[i].CreatedAt.Format("02 January 2006 15:04")
+    indexDisplay.Posts[i].FormattedUpdatedDate = indexDisplay.Posts[i].UpdatedAt.Format("02 January 2006 15:04")
+  }
+
   if r.Method == http.MethodGet {
+    //* Récupère les posts de la base de données
+    posts := golang.GetAllPosts()
+    for i := range posts {
+      posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
+    }
+    indexDisplay.Posts = posts
+
     tmpl.Execute(w, indexDisplay)
-    
-  } 
+  }
+
   if r.Method == http.MethodPost {
     err := r.ParseForm()
     if err != nil {
@@ -51,8 +66,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
     title := r.FormValue("title")
     content := r.FormValue("content")
+    postID := r.FormValue("postId")
+    vote := r.FormValue("voteType")
 
-    fmt.Println(title, content)
 
     var postSend = golang.Post{}
     postSend.Title = title
@@ -67,6 +83,23 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
       }
     } else {
       fmt.Println("Error retrieving user cookie:", err)
+      return
+    }
+
+    //* Vérifie si l'utilisateur veut voter
+    if vote != "" {
+      postId, err := strconv.Atoi(postID)
+      if err != nil {
+        fmt.Println("Error converting postID to int:", err)
+        return
+      }
+      
+      userID, err := strconv.Atoi(userCookie.Value)
+      if err != nil {
+        fmt.Println("Error converting userID to int:", err)
+        return
+      }
+      golang.Votes(uint(postId), uint(userID), vote)
     }
 
     //* Vérifie si l'utilisateur est connecté
@@ -82,6 +115,15 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
       indexDisplay.ErrIndexMessage = errIndexMessage
       fmt.Println(errIndexMessage)
     }
+    
+    //* Récupère les posts pour mettre à jour les votes
+    posts := golang.GetAllPosts()
+    for i := range posts {
+      posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
+    }
+    indexDisplay.Posts = posts
+
+
     
     tmpl.Execute(w, indexDisplay)
   }

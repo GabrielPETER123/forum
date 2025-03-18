@@ -17,7 +17,7 @@
             <a href="../connexion" class="login"><h2><i class="fa-regular fa-user"></i></h2></a> 
         </div>
 
-        <!-- POST SUR LE FORUM -->
+       
         <div id="postForm">
             <h1>Créer un post</h1>
             <form method="post">
@@ -29,6 +29,33 @@
             <p>
                 {{.ErrIndexMessage}}
             </p>
+        </div>
+
+        <!-- POST SUR LE FORUM -->
+        <div id="post">
+            <h1>Posts</h1>
+            {{range .Posts}}
+                <div class="post">
+                    <h2>{{.Title}}</h2>
+                    <p>{{.Text}}</p>
+                    <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
+
+                    <div class="vote-buttons">
+                        <form method="post" style="display: inline;">
+                            <input type="hidden" name="postId" value="{{.ID}}">
+                            <input type="hidden" name="voteType" value="up">
+                            <button type="submit" class="upvote"><i class="fas fa-thumbs-up"></i>{{.TotalUp}}</button>
+                        </form>
+                        <form method="post" style="display: inline;">
+                            <input type="hidden" name="postId" value="{{.ID}}">
+                            <input type="hidden" name="voteType" value="down">
+                            <button type="submit" class="downvote"><i class="fas fa-thumbs-down">{{.TotalDown}}</i></button>
+                        </form>
+                    </div>
+
+                        <!-- <a href="../post/{{.ID}}">Voir le post</a> -->
+                </div>
+            {{end}}
         </div>
 
     </body>

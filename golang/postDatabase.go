@@ -6,29 +6,19 @@ import (
 	"gorm.io/driver/sqlite"
 )
 
-type Post struct {
-	gorm.Model
-	Title  string
-	UserID uint
-	User User `gorm:"foreignKey:UserID"`
-	Text   string
-}
-
-
-
 //* Fonction qui écrit dans la base de données
 func AddPostInDataBase (postSend Post){
-	fmt.Println("Opening database connection...")
+	// fmt.Println("Opening database connection...")
 	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
-	fmt.Println("Database connection opened.")
+	// fmt.Println("Database connection opened.")
 
 	//* Migation du schéma
-	fmt.Println("Migrating schema...")
+	// fmt.Println("Migrating schema...")
 	db.AutoMigrate(&Post{})
-	fmt.Println("Schema migrated.")
+	// fmt.Println("Schema migrated.")
 
 	//* Lecture de la base de données
 	//! TEST si le texte est déjà présent dans la base de données
@@ -39,9 +29,9 @@ func AddPostInDataBase (postSend Post){
 	}
 
 	//* Création du Post
-	fmt.Println("Creating post...")
+	// fmt.Println("Creating post...")
 	db.Create(&postSend)
-	fmt.Println("Post created.")
+	// fmt.Println("Post created.")
 }
 
 	// // Read

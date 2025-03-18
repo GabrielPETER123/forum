@@ -1,18 +1,18 @@
 package golang
 
 import (
-	"fmt"
+	// "fmt"
 	"gorm.io/gorm"
 	"gorm.io/driver/sqlite"
 )
 
 func GetUserByID(userID int) User {
-	fmt.Println("Opening database connection...")
+	// fmt.Println("Opening database connection...")
 	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
-	fmt.Println("Database connection opened.")
+	// fmt.Println("Database connection opened.")
 
 	//* Copie de l'utilisateur
 	var user User
