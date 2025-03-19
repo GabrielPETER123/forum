@@ -457,6 +457,7 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       http.Error(w, "Error executing template", http.StatusInternalServerError)
     }
   }
+  
 }
 
 func main() {

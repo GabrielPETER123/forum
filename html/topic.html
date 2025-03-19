@@ -46,6 +46,7 @@
                     <p>{{.Text}}</p>
                     <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
 
+                    <!-- BOUTONS DE VOTE -->
                     <div class="vote-buttons">
                         <form method="post" style="display: inline;">
                             <input type="hidden" name="postId" value="{{.ID}}">
@@ -58,10 +59,22 @@
                             <button type="submit" class="downvote"><i class="fas fa-thumbs-down">{{.TotalDown}}</i></button>
                         </form>
                     </div>
-                    <form method="get" action="../post">
-                        <input type="hidden" name="postId" value="{{.ID}}">
-                        <button type="submit">Voir le post</button>
-                    </form>
+
+                    <!-- BOUTON MODIFIER LE POST -->
+                    <div>
+                        <form method="get">
+                            <input type="hidden" name="postId" value="{{.ID}}">
+                            <button type="submit">Modifier le post</button>
+                        </form>
+                    </div>
+
+                    <!-- BOUTON VOIR LE POST -->
+                    <div>
+                        <form method="get" action="../post">
+                            <input type="hidden" name="postId" value="{{.ID}}">
+                            <button type="submit">Voir le post</button>
+                        </form>
+                    </div>
                 </div>
             {{end}}
         </div>
