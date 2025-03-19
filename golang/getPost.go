@@ -58,3 +58,27 @@ func GetAllPosts() []Post {
 	
 	return posts
 }
+
+func GetPostsByTopicID(topicID int) []Post {
+	// fmt.Println("Opening database connection...")
+	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+	// fmt.Println("Database connection opened.")
+
+	//* Copie des posts du topic
+	var posts []Post
+	db.Where("topic_id = ?", topicID).Find(&posts)
+
+	for i := range posts {
+        posts[i].User = GetUserByID(int(posts[i].UserID)) // Remplissez le champ User
+    }
+
+	for i := range posts {
+        posts[i].FormattedCreationDate = posts[i].CreatedAt.Format("02 January 2006 15:04")
+        posts[i].FormattedUpdatedDate = posts[i].UpdatedAt.Format("02 January 2006 15:04")
+    }
+
+	return posts
+}

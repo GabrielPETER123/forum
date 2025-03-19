@@ -30,9 +30,7 @@
                 <button type="submit">Créer le Topic</button>
                 <br>
                 <!-- Permet d'afficher les erreurs de création de topic ou de succès -->
-                {{if .ErrListTopicMessage}}
-                    <p>{{.ErrListTopicMessage}}</p>
-                {{end}}
+                <p>{{.ErrListTopicMessage}}</p>
                 <br>
                 {{.MessageAddTopic}}
             </form>
@@ -42,7 +40,7 @@
         <div>
             {{range .Topics}}
                 <div>
-                    <a href="../topic/{{.ID}}">{{.Name}}</a>
+                    <a href="/topic?topicId={{.ID}}">{{.Name}}</a>
                     <p>{{.Description}}</p>
                 </div>
             {{end}}

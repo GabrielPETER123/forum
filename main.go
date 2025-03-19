@@ -18,8 +18,6 @@ var (
 )
 
 type IndexDisplay struct {
-  Posts []golang.Post
-  ErrIndexMessage string
 }
 type ConnexionDisplay struct {
   ErrConnexionMessage string
@@ -46,93 +44,21 @@ type ListTopicDisplay struct {
 
 type TopicDisplay struct {
   Topic golang.Topic
+  Posts []golang.Post
+  ErrTopicMessage string
 }
 
 //!-----------------------------------------------------------------------------------------
 
 //* Fonction qui gère la page d'accueil
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-  indexDisplay := IndexDisplay{}
   tmpl := template.Must(template.ParseFiles("html/index.html"))
-
   if r.Method == http.MethodGet {
-    //* Récupère les posts de la base de données et Formate les dates pour la lisibilité
-    posts := golang.GetAllPosts()
-    for i := range posts {
-      posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
-    }
-    indexDisplay.Posts = posts
-
-    tmpl.Execute(w, indexDisplay)
+    tmpl.Execute(w, nil)
   }
-
+  
   if r.Method == http.MethodPost {
-    err := r.ParseForm()
-    if err != nil {
-      http.Error(w, "Error parsing form.", http.StatusBadRequest)
-      return
-    }
-
-    title := r.FormValue("title")
-    content := r.FormValue("content")
-    postID := r.FormValue("postId")
-    vote := r.FormValue("voteType")
-
-
-    var postSend = golang.Post{}
-    postSend.Title = title
-    postSend.Text = content
-
-    //* Réccupère l'ID de l'utilisateur des cookies
-    userCookie, err := r.Cookie("UserID")
-    if err == nil {
-      userID, err := strconv.Atoi(userCookie.Value)
-      if err == nil {
-        postSend.UserID = uint(userID)
-      }
-    } else {
-      fmt.Println("Error retrieving user cookie:", err)
-      return
-    }
-
-    //* Vérifie si l'utilisateur veut voter
-    if vote != "" {
-      postId, err := strconv.Atoi(postID)
-      if err != nil {
-        fmt.Println("Error converting postID to int:", err)
-        return
-      }
-      
-      userID, err := strconv.Atoi(userCookie.Value)
-      if err != nil {
-        fmt.Println("Error converting userID to int:", err)
-        return
-      }
-      golang.Votes(uint(postId), uint(userID), vote)
-    }
-
-    //* Vérifie si l'utilisateur est connecté
-    if userCookie != nil && userCookie.Value != "" {
-      //* Écris dans la base de données si le titre ou le contenu n'est pas vide
-      if title != "" || content != "" {
-        fmt.Println("AddPostInDataBase database...")
-        golang.AddPostInDataBase(postSend)
-        fmt.Println("AddPostInDataBase ended.")
-      }
-    } else {
-      errIndexMessage := "Connectez vous pour poster !"
-      indexDisplay.ErrIndexMessage = errIndexMessage
-      fmt.Println(errIndexMessage)
-    }
-    
-    //* Récupère les posts pour mettre à jour les votes et formatte les dates
-    posts := golang.GetAllPosts()
-    for i := range posts {
-      posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
-    }
-    indexDisplay.Posts = posts
-    
-    tmpl.Execute(w, indexDisplay)
+    tmpl.Execute(w, nil)
   }
 }
   
@@ -335,11 +261,11 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 
 func listTopicsHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/listTopics.html"))
-  var topics ListTopicDisplay
+  var topicsDisplay ListTopicDisplay
 
   if r.Method == http.MethodGet {
-    topics.Topics = golang.GetAllTopics()
-    tmpl.Execute(w, topics)
+    topicsDisplay.Topics = golang.GetAllTopics()
+    tmpl.Execute(w, topicsDisplay)
   }
 
   if r.Method == http.MethodPost {
@@ -354,65 +280,185 @@ func listTopicsHandler(w http.ResponseWriter, r *http.Request) {
 
     //* Vérifie si le nom du topic ou la description est vide
     if nameTopic == "" || description == "" {
-      topics.ErrListTopicMessage = "Nom du topic ou description vide."
-      tmpl.Execute(w, topics)
+      topicsDisplay.ErrListTopicMessage = "Nom du topic ou description vide."
+
+      //* Récupère les topics
+      topicsDisplay.Topics = golang.GetAllTopics()
+      tmpl.Execute(w, topicsDisplay)
       return
     } else {
-
 
       //* Récupère l'utilisateur
       userCookie, err := r.Cookie("UserID")
       if err != nil {
+        topicsDisplay.ErrListTopicMessage = "Connectez vous pour créer un topic !"
+        //* Récupère les topics ARRETE DE l'OUBLIER
+        topicsDisplay.Topics = golang.GetAllTopics()
+        tmpl.Execute(w, topicsDisplay)
         return
       }
       userID, err := strconv.Atoi(userCookie.Value)
       if err != nil {
+        topicsDisplay.ErrListTopicMessage = "Connectez vous pour créer un topic !"
+        //* Récupère les topics ARRETE DE l'OUBLIER
+        topicsDisplay.Topics = golang.GetAllTopics()
+        tmpl.Execute(w, topicsDisplay)
         return
       }
       user := golang.GetUserByID(userID)
 
-      //* Ajoute le topic dans la base de données
-      result := golang.AddTopic(nameTopic, description, user)
-      if result != "Topic created" {
-        topics.ErrListTopicMessage = result
-        tmpl.Execute(w, topics)
+      //* Vérifie si l'utilisateur est connecté
+      if user.Username == "" {
+        topicsDisplay.ErrListTopicMessage = "Connectez vous pour créer un topic !"
+
+        //* Récupère les topics
+        topicsDisplay.Topics = golang.GetAllTopics()
+        tmpl.Execute(w, topicsDisplay)
         return
       } else {
-        topics.MessageAddTopic = "Topic créé."
+        //* Ajoute le topic dans la base de données
+        result := golang.AddTopic(nameTopic, description, user)
+        if result != "Topic created" {
+          topicsDisplay.ErrListTopicMessage = result
+          tmpl.Execute(w, topicsDisplay)
+          return
+        } else {
+          topicsDisplay.MessageAddTopic = "Topic créé."
+        }
       }
     }
     //* Récupère les topics
-    topics.Topics = golang.GetAllTopics()
+    topicsDisplay.Topics = golang.GetAllTopics()
 
-    tmpl.Execute(w, topics)
+    tmpl.Execute(w, topicsDisplay)
   }
 
 }
 
 func topicHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/topic.html"))
-  topic := TopicDisplay{}
+  topicDisplay := TopicDisplay{}
+  
   if r.Method == http.MethodGet {
-
     //* Récupère le topicID dans l'URL
     topicIDStr := r.URL.Query().Get("topicId")
     if topicIDStr == "" {
+      http.Error(w, "Missing topicId query parameter", http.StatusBadRequest)
       return
     }
     topicID, err := strconv.Atoi(topicIDStr)
     if err != nil {
+      http.Error(w, "Invalid topicId query parameter", http.StatusBadRequest)
       return
     }
-    topic.Topic = golang.GetTopic(topicID)
-    
-    tmpl.Execute(w, topic)
+    topicDisplay.Topic = golang.GetTopic(topicID)
+
+    //* Récupère les posts pour mettre à jour les votes et formatte les dates
+    posts := golang.GetPostsByTopicID(topicID)
+    for i := range posts {
+      posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
+    }
+    topicDisplay.Posts = posts
+
+    err = tmpl.Execute(w, topicDisplay)
+    if err != nil {
+      http.Error(w, "Error executing template", http.StatusInternalServerError)
+    }
+    return
   }
+
   if r.Method == http.MethodPost {
+    err := r.ParseForm()
+    if err != nil {
+      http.Error(w, "Error parsing form.", http.StatusBadRequest)
+      return
+    }
 
+    title := r.FormValue("title")
+    content := r.FormValue("content")
+    postID := r.FormValue("postId")
+    vote := r.FormValue("voteType")
+    
+    topicIDStr := r.FormValue("topicId")
+    topicID, err := strconv.Atoi(topicIDStr)
+    if err != nil {
+      http.Error(w, "Invalid topicId", http.StatusBadRequest)
+      return
+    }
 
-    tmpl.Execute(w, nil)
+    var postSend = golang.Post{}
+    postSend.TopicID = uint(topicID)
+    postSend.Title = title
+    postSend.Text = content
+
+    //* Récupère l'ID de l'utilisateur des cookies
+    userCookie, err := r.Cookie("UserID")
+    if err != nil {
+      topicDisplay.ErrTopicMessage = "Connectez vous pour poster !"
+      posts := golang.GetPostsByTopicID(topicID)
+      for i := range posts {
+        posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
+      }
+      topicDisplay.Posts = posts
+      err = tmpl.Execute(w, topicDisplay)
+      if err != nil {
+        http.Error(w, "Error executing template", http.StatusInternalServerError)
+      }
+      return
+    }
+
+    userID, err := strconv.Atoi(userCookie.Value)
+    if err != nil {
+      http.Error(w, "Invalid user ID", http.StatusBadRequest)
+      return
+    }
+    postSend.UserID = uint(userID)
+
+    //* Vérifie si l'utilisateur est connecté
+    if userCookie != nil && userCookie.Value != "" {
+      //* Écris dans la base de données si le titre ou le contenu n'est pas vide
+      if title != "" || content != "" {
+        fmt.Println("AddPostInDataBase database...")
+        golang.AddPostInDataBase(postSend)
+        fmt.Println("AddPostInDataBase ended.")
+      }
+    } else {
+      topicDisplay.ErrTopicMessage = "Connectez vous pour poster !"
+    }
+
+    //* Vérifie si l'utilisateur veut voter
+    if userCookie != nil && userCookie.Value != "" && postID != "" && vote != "" {
+      postId, err := strconv.Atoi(postID)
+      if err != nil {
+        http.Error(w, "Invalid post ID", http.StatusBadRequest)
+        return
+      }
+      
+      userID, err := strconv.Atoi(userCookie.Value)
+      if err != nil {
+        fmt.Println("Error getting user ID")
+        http.Error(w, "Invalid user ID", http.StatusBadRequest)
+        return
+      }
+      golang.Votes(uint(postId), uint(userID), vote)
+    } else {
+      topicDisplay.ErrTopicMessage = "Connectez vous pour voter !"
+    }
+    
+    //* Récupère les posts pour mettre à jour les votes et formatte les dates
+    posts := golang.GetPostsByTopicID(topicID)
+    for i := range posts {
+      posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
+    }
+    topicDisplay.Posts = posts
+
+    err = tmpl.Execute(w, topicDisplay)
+    if err != nil {
+      http.Error(w, "Error executing template", http.StatusInternalServerError)
+    }
   }
 }
+
 func main() {
 
   golang.CreateAdminUser()

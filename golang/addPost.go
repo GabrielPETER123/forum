@@ -33,17 +33,3 @@ func AddPostInDataBase (postSend Post){
 	db.Create(&postSend)
 	// fmt.Println("Post created.")
 }
-
-	// // Read
-	// fmt.Println("Reading post...")
-	// var product Post
-	// db.First(&product, 1) // find post with integer primary key
-	// db.First(&product, "code = ?", "D42") // find post with code D42
-	// fmt.Println("Post read.")
-
-	// // Update - update post's price to 200
-	// fmt.Println("Updating post price...")
-	// db.Model(&product).Update("Title", "Bière blonde")
-	// // Update - update multiple fields
-	// db.Model(&product).Updates(Post{Text: "La bière c'est trop bien"}) // non-zero fields
-	// fmt.Println("Post updated.")

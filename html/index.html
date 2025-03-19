@@ -16,49 +16,5 @@
             <a href="../pageUtilisateur">Page Utilisateur</a>
             <a href="../connexion" class="login"><h2><i class="fa-regular fa-user"></i></h2></a> 
         </div>
-
-       
-        <div id="postForm">
-            <h1>Créer un post</h1>
-            <form method="post">
-                <textarea id="title" name="title" placeholder="Titre de votre post..."></textarea>
-                <textarea id="content" name="content" placeholder="Écrire votre post ici..."></textarea>
-                <button type="submit" id="textPost">Publier</button>
-            </form>
-            <br>
-            <p>
-                {{.ErrIndexMessage}}
-            </p>
-        </div>
-
-        <!-- POST SUR LE FORUM -->
-        <div id="post">
-            <h1>Posts</h1>
-            {{range .Posts}}
-                <div class="post">
-                    <h2>{{.Title}}</h2>
-                    <p>{{.Text}}</p>
-                    <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
-
-                    <div class="vote-buttons">
-                        <form method="post" style="display: inline;">
-                            <input type="hidden" name="postId" value="{{.ID}}">
-                            <input type="hidden" name="voteType" value="up">
-                            <button type="submit" class="upvote"><i class="fas fa-thumbs-up"></i>{{.TotalUp}}</button>
-                        </form>
-                        <form method="post" style="display: inline;">
-                            <input type="hidden" name="postId" value="{{.ID}}">
-                            <input type="hidden" name="voteType" value="down">
-                            <button type="submit" class="downvote"><i class="fas fa-thumbs-down">{{.TotalDown}}</i></button>
-                        </form>
-                    </div>
-                    <form method="get" action="../post">
-                        <input type="hidden" name="postId" value="{{.ID}}">
-                        <button type="submit">Voir le post</button>
-                    </form>
-                </div>
-            {{end}}
-        </div>
-
     </body>
 </html>
