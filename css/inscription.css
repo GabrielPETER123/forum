@@ -1,0 +1,48 @@
+body {
+    background-image: url(../assets/inscpriotnfond.jpg);
+    color: white;
+    
+}
+
+.box {
+    width: 750px;
+    height: 550px;
+    background-color: rgb(51, 51, 52);
+    color: transparent;
+    display: flex;
+    justify-content: flex;
+    align-items: flex;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 30px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-top: 10%;
+    margin-left: 27%;
+    gap: 10px;
+    flex-direction: row;
+
+}
+
+.box:hover {
+    box-shadow: 0 0 20px rgb(245, 159, 39), 0 0 10px rgb(245, 159, 39), 0 0 25px rgb(245, 159, 39); /* Effet néon */
+
+}
+
+h1 {
+    color: white;
+    font-size: 2.7em;
+    display: flex;
+    margin-top: -31%;
+    margin-left: 41%;
+
+}
+
+h2{
+    color: white;
+    font-size: 1.9em;
+    display: flex;
+    margin-top: -1%;
+    margin-left: 34%;
+
+}
