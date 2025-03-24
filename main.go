@@ -259,6 +259,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
   }
 }
 
+//* Fonction qui gère la page des topics
 func listTopicsHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/listTopics.html"))
   var topicsDisplay ListTopicDisplay
@@ -335,6 +336,7 @@ func listTopicsHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//* Fonction qui gère la page d'un topic
 func topicHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/topic.html"))
   topicDisplay := TopicDisplay{}
@@ -360,6 +362,7 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     }
     topicDisplay.Posts = posts
 
+    //! Exécute le template
     err = tmpl.Execute(w, topicDisplay)
     if err != nil {
       http.Error(w, "Error executing template", http.StatusInternalServerError)
@@ -374,11 +377,19 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       return
     }
 
+    //* Info du post
     title := r.FormValue("title")
     content := r.FormValue("content")
     postID := r.FormValue("postId")
     vote := r.FormValue("voteType")
+    fmt.Println("Vote:", vote)
     
+    //* Info de la modification
+    modifyPostID := r.FormValue("modifyPostId")
+    modifyTitle := r.FormValue("modifyTitle")
+    modifyContent := r.FormValue("modifyContent")
+    
+    //* Récupère le topicID dans l'URL
     topicIDStr := r.FormValue("topicId")
     topicID, err := strconv.Atoi(topicIDStr)
     if err != nil {
@@ -394,23 +405,12 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     //* Récupère l'ID de l'utilisateur des cookies
     userCookie, err := r.Cookie("UserID")
     if err != nil {
-      topicDisplay.ErrTopicMessage = "Connectez vous pour poster !"
-      posts := golang.GetPostsByTopicID(topicID)
-      for i := range posts {
-        posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
-      }
-      topicDisplay.Posts = posts
-      err = tmpl.Execute(w, topicDisplay)
-      if err != nil {
-        http.Error(w, "Error executing template", http.StatusInternalServerError)
-      }
-      return
+      topicDisplay.ErrTopicMessage = "Connectez vous pour poster (PAS CONNECTÉ)!"
     }
 
     userID, err := strconv.Atoi(userCookie.Value)
     if err != nil {
       http.Error(w, "Invalid user ID", http.StatusBadRequest)
-      return
     }
     postSend.UserID = uint(userID)
 
@@ -418,16 +418,14 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     if userCookie != nil && userCookie.Value != "" {
       //* Écris dans la base de données si le titre ou le contenu n'est pas vide
       if title != "" || content != "" {
-        fmt.Println("AddPostInDataBase database...")
         golang.AddPostInDataBase(postSend)
-        fmt.Println("AddPostInDataBase ended.")
       }
     } else {
-      topicDisplay.ErrTopicMessage = "Connectez vous pour poster !"
+      topicDisplay.ErrTopicMessage = "Connectez vous pour poster ! (PAS CONNECTÉ)"
     }
 
     //* Vérifie si l'utilisateur veut voter
-    if userCookie != nil && userCookie.Value != "" && postID != "" && vote != "" {
+    if userCookie != nil && userCookie.Value != "" && postID != "" && vote != "" && (modifyContent == content && modifyTitle == title) {
       postId, err := strconv.Atoi(postID)
       if err != nil {
         http.Error(w, "Invalid post ID", http.StatusBadRequest)
@@ -441,10 +439,35 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
         return
       }
       golang.Votes(uint(postId), uint(userID), vote)
+      
+      //* Redirige l'utilisateur après avoir traité le vote
+      http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
     } else {
-      topicDisplay.ErrTopicMessage = "Connectez vous pour voter !"
+      topicDisplay.ErrTopicMessage = "Connectez vous pour voter ! (VEUX VOTER)"
     }
-    
+  
+    //* Modifier les posts
+    if modifyPostID != "" && modifyTitle != title && modifyContent != content && vote == "" {
+      modifyPostID, err := strconv.Atoi(modifyPostID)
+      if err != nil {
+        http.Error(w, "Invalid post ID", http.StatusBadRequest)
+        return
+      }
+
+
+      var postSend = golang.Post{}
+      postSend.ID = uint(modifyPostID)
+      postSend.Title = modifyTitle
+      postSend.Text = modifyContent
+      
+
+      golang.UpdatePost(postSend)
+
+      http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
+    } else {
+      topicDisplay.ErrTopicMessage = "Connectez le titre ou le contenue pour modifier ! (VEUX MODIFIER)"
+    }
+
     //* Récupère les posts pour mettre à jour les votes et formatte les dates
     posts := golang.GetPostsByTopicID(topicID)
     for i := range posts {
@@ -452,12 +475,12 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     }
     topicDisplay.Posts = posts
 
+    //! Exécute le template
     err = tmpl.Execute(w, topicDisplay)
     if err != nil {
       http.Error(w, "Error executing template", http.StatusInternalServerError)
     }
   }
-  
 }
 
 func main() {

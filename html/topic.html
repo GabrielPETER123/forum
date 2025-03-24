@@ -62,9 +62,20 @@
 
                     <!-- BOUTON MODIFIER LE POST -->
                     <div>
-                        <form method="get">
-                            <input type="hidden" name="postId" value="{{.ID}}">
+                        <form method="post">
+                            <!-- Bouton pour afficher le formulaire de modification du post -->
                             <button type="submit">Modifier le post</button>
+                        </form>
+
+                        <form method="post">
+                            <input type="hidden" name="modifyPostId" value="{{.ID}}">
+                            <textarea id="title" name="modifyTitle">{{.Title}}</textarea>
+                            <br>
+                            <textarea id="content" name="modifyContent">{{.Text}}</textarea>
+                            <br>
+                            <button type="submit" id="textPost">Modifier</button>
+                            <br>
+                            <button>Annuler</button>
                         </form>
                     </div>
 
@@ -76,6 +87,7 @@
                         </form>
                     </div>
                 </div>
+                <hr>
             {{end}}
         </div>
 
