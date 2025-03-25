@@ -50,6 +50,10 @@ type TopicDisplay struct {
   ErrTopicMessage string
 }
 
+type ActifUserDisplay struct {
+  Users []golang.User
+}
+
 //!-----------------------------------------------------------------------------------------
 
 //* Fonction qui gère la page d'accueil
@@ -404,13 +408,15 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     content := r.FormValue("content")
     postID := r.FormValue("postId")
     vote := r.FormValue("voteType")
-    fmt.Println("Vote:", vote)
     
     //* Info de la modification
     modifyPostIDStr := r.FormValue("modifyPostId")
     modifyTitle := r.FormValue("modifyTitle")
     modifyContent := r.FormValue("modifyContent")
     
+    //* Info de la suppression
+    deletePostIDStr := r.FormValue("deletePostId")
+
     //* Récupère le topicID dans l'URL
     topicIDStr := r.FormValue("topicId")
     topicID, err := strconv.Atoi(topicIDStr)
@@ -484,7 +490,7 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
         topicDisplay.ErrTopicMessage = "Connectez vous pour voter ! (VEUX VOTER)"
       }
     
-      //* Modifier les posts
+      //* Modifier le Post
       if modifyPostIDStr != "" && modifyTitle != title && modifyContent != content && vote == "" {
         modifyPostID, err := strconv.Atoi(modifyPostIDStr)
         if err != nil {
@@ -505,6 +511,20 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
         topicDisplay.ErrTopicMessage = "Connectez le titre ou le contenue pour modifier ! (VEUX MODIFIER)"
       }
 
+      //* Supprimer le Post
+      if deletePostIDStr != "" {
+        deletePostID, err := strconv.Atoi(deletePostIDStr)
+        if err != nil {
+          http.Error(w, "Invalid post ID", http.StatusBadRequest)
+          return
+        }
+
+        golang.DeletePost(deletePostID)
+
+        http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
+        return
+      }
+
       //! Exécute le template
       err = tmpl.Execute(w, topicDisplay)
       if err != nil {
@@ -512,6 +532,36 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       }
     }
   }
+}
+
+//* Fonction qui gère la page des utilisateurs actifs
+func actifUser(w http.ResponseWriter, r *http.Request) {
+  tmp := template.Must(template.ParseFiles("html/actifUser.html"))
+  if r.Method == http.MethodGet {
+    users := ActifUserDisplay{Users: golang.GetAllUsers()}
+    for i := range users.Users {
+      //* Fait le total des posts de l'utilisateur
+      posts := golang.GetPostsByUserID(int(users.Users[i].ID))
+      if len(posts) > 0 {
+        users.Users[i].TotalPost = uint(len(posts))
+      } else {
+        users.Users[i].TotalPost = 0
+      }
+
+      //* Fait le total des votes de l'utilisateur
+      users.Users[i].TotalVote = golang.TotalVotes(users.Users[i].ID)
+    }
+    err := tmp.Execute(w, users)
+    if err != nil {
+      http.Error(w, "Error executing template", http.StatusInternalServerError)
+      return
+    }
+  }
+
+  if r.Method == http.MethodPost {
+    tmp.Execute(w, nil)
+  }
+
 }
 
 func main() {
@@ -525,6 +575,7 @@ func main() {
   http.HandleFunc("/post", postHandler)
   http.HandleFunc("/listTopics", listTopicsHandler)
   http.HandleFunc("/topic", topicHandler)
+  http.HandleFunc("/actifUser", actifUser)
   http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
 	fmt.Println("http://localhost:8080/")
 	http.ListenAndServe(":8080", nil)

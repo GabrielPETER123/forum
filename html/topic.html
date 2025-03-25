@@ -14,7 +14,7 @@
             <a href="../" class="forum">Forum</a>
             <a href="../tendances" class="topics">Topics Tendances</a>
             <a href="../listTopics" class="liste">Liste des Topics</a>
-            <a href="../userActif" class="Utilisateurs">Utilisateurs les plus actifs</a>
+            <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
         </div>
 
         <h2>{{.Topic.Name}}</h2>
@@ -82,6 +82,15 @@
                         </div>
                     {{end}}
                 </div>
+
+                <!-- BOUTON SUPPRIMER LE POST -->
+                <div class="delete-post">
+                    {{if and (eq .User.ID .UserID) .IsLoggedIn}}
+                        <form method="post">
+                            <input type="hidden" name="deletePostId" value="{{.ID}}">
+                            <button type="submit">Supprimer le post</button>
+                        </form>
+                    {{end}}
 
                 <!-- BOUTON VOIR LE POST -->
                 <div>
