@@ -62,7 +62,7 @@
 
                 <!-- BOUTON MODIFIER LE POST -->
                 <div class="modify-post">
-                    {{if and (eq .User.ID .UserID) .IsLoggedIn}}
+                    {{if and (eq .UserConnectedID .UserID) .IsLoggedIn}}
                         <div>
                             <form method="post">
                                 <!-- Bouton pour afficher le formulaire de modification du post -->
@@ -85,7 +85,7 @@
 
                 <!-- BOUTON SUPPRIMER LE POST -->
                 <div class="delete-post">
-                    {{if and (eq .User.ID .UserID) .IsLoggedIn}}
+                    {{if and (eq .UserConnectedID .UserID) .IsLoggedIn}}
                         <form method="post">
                             <input type="hidden" name="deletePostId" value="{{.ID}}">
                             <button type="submit">Supprimer le post</button>

@@ -27,7 +27,7 @@
             <div class="post">
                 <h2>Titre : {{.Title}}</h2>
                 <p>Contenue : {{.Text}}</p>
-            <form method="post" action="../pageUtilisateur">
+            <form method="post">
                 <input type="hidden" name="deletePost" value="{{.ID}}">
                 <button type="submit">Supprimer</button>
             </form>

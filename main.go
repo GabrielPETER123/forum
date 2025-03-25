@@ -123,8 +123,10 @@ func connexionHandler(w http.ResponseWriter, r *http.Request) {
       return
     } else {
       errConnexion = "Nom ou Email incorrect.\n"
-      fmt.Println(errConnexion)
+
       connexionDisplay.ErrConnexionMessage += errConnexion
+      http.Redirect(w, r, "/connexion", http.StatusSeeOther)
+      return
     }
   }
   tmpl.Execute(w, connexionDisplay)
@@ -223,11 +225,15 @@ func profil(w http.ResponseWriter, r *http.Request) {
 
   if r.Method == http.MethodPost {
     r.ParseForm()
-    deletePostID, err := strconv.Atoi(r.FormValue("deletePost"))
+    deletePostIDStr := r.FormValue("deletePost")
+    deletePostID, err := strconv.Atoi(deletePostIDStr)
     if err != nil {
         return
     }
+
+    fmt.Println("Delete post ID:", deletePostID)
     golang.DeletePost(deletePostID)
+    
     http.Redirect(w, r, "/profil", http.StatusSeeOther)
     tmpl.Execute(w, profilDisplay)
   }
@@ -349,6 +355,7 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
   topicDisplay := TopicDisplay{}
   
   if r.Method == http.MethodGet {
+
     //* Récupère le topicID dans l'URL
     topicIDStr := r.URL.Query().Get("topicId")
     if topicIDStr == "" {
@@ -371,10 +378,12 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
 
     //* Récupère l'ID de l'utilisateur des cookies
     userCookie, err := r.Cookie("UserID")
+
     if err != nil {
       topicDisplay.ErrTopicMessage = "Connectez vous pour poster (PAS CONNECTÉ)!"
       for i := range topicDisplay.Posts {
       topicDisplay.Posts[i].IsLoggedIn = false
+      topicDisplay.Posts[i].UserConnectedID = 0
       }
     } else {
       userID, err := strconv.Atoi(userCookie.Value)
@@ -383,8 +392,10 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
         return
       }
       topicDisplay.User = golang.GetUserByID(userID)
+
       for i := range topicDisplay.Posts {
         topicDisplay.Posts[i].IsLoggedIn = true
+        topicDisplay.Posts[i].UserConnectedID = uint(userID)
       }
     }
 
@@ -409,6 +420,7 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     postID := r.FormValue("postId")
     vote := r.FormValue("voteType")
     
+    
     //* Info de la modification
     modifyPostIDStr := r.FormValue("modifyPostId")
     modifyTitle := r.FormValue("modifyTitle")
@@ -432,43 +444,51 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     }
     topicDisplay.Posts = posts
 
-    //* Crée un post
-    var postSend = golang.Post{}
-    postSend.TopicID = uint(topicID)
-    postSend.Title = title
-    postSend.Text = content
-
-    //* Récupère l'ID de l'utilisateur des cookies
+    //* Vérifie que l'utilisateur est connecté
     userCookie, err := r.Cookie("UserID")
+
     if err != nil {
       topicDisplay.ErrTopicMessage = "Connectez vous pour poster (PAS CONNECTÉ)!"
+
       for i := range topicDisplay.Posts {
-      topicDisplay.Posts[i].IsLoggedIn = false
+        topicDisplay.Posts[i].IsLoggedIn = false
+        topicDisplay.Posts[i].UserConnectedID = 0
       }
+
     } else {
+      //* Création de l'ID de l'utilisateur
       userID, err := strconv.Atoi(userCookie.Value)
       if err != nil {
         http.Error(w, "Invalid user ID", http.StatusBadRequest)
         return
       }
-      postSend.UserID = uint(userID)
-      for i := range topicDisplay.Posts {
-      topicDisplay.Posts[i].IsLoggedIn = true
-      }
+      topicDisplay.User = golang.GetUserByID(userID)
 
-      //* Vérifie si l'utilisateur est connecté
-      if userCookie != nil && userCookie.Value != "" {
-        //* Écris dans la base de données si le titre ou le contenu n'est pas vide
-        if title != "" || content != "" {
-          golang.AddPostInDataBase(postSend)
-        }
-        topicDisplay.User = golang.GetUserByID(userID)
+      //* Sert à afficher les boutons
+      for i := range topicDisplay.Posts {
+        topicDisplay.Posts[i].IsLoggedIn = true
+        topicDisplay.Posts[i].UserConnectedID = uint(userID)
+      }
+    
+      //* Vérifie si l'utilisateur veux poster
+      if vote == "" && title != "" && content != "" {
+
+        //* Crée un post
+        var postSend = golang.Post{}
+        postSend.TopicID = uint(topicID)
+        postSend.Title = title
+        postSend.Text = content
+        postSend.UserID = uint(userID)
+
+        golang.AddPostInDataBase(postSend)
+        http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
+        return
       } else {
-        topicDisplay.ErrTopicMessage = "Connectez vous pour poster ! (PAS CONNECTÉ)"
+        topicDisplay.ErrTopicMessage = "Connectez vous pour poster ! (VEUX POSTER)"
       }
 
       //* Vérifie si l'utilisateur veut voter
-      if userCookie != nil && userCookie.Value != "" && postID != "" && vote != "" && (modifyContent == content && modifyTitle == title) {
+      if (postID != "" && vote != "") && (modifyContent == content && modifyTitle == title) {
         postId, err := strconv.Atoi(postID)
         if err != nil {
           http.Error(w, "Invalid post ID", http.StatusBadRequest)
@@ -489,7 +509,7 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       } else {
         topicDisplay.ErrTopicMessage = "Connectez vous pour voter ! (VEUX VOTER)"
       }
-    
+
       //* Modifier le Post
       if modifyPostIDStr != "" && modifyTitle != title && modifyContent != content && vote == "" {
         modifyPostID, err := strconv.Atoi(modifyPostIDStr)
@@ -519,17 +539,18 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
           return
         }
 
+        fmt.Println("Delete post ID:", deletePostID)
         golang.DeletePost(deletePostID)
 
         http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
         return
       }
-
-      //! Exécute le template
-      err = tmpl.Execute(w, topicDisplay)
-      if err != nil {
-        http.Error(w, "Error executing template", http.StatusInternalServerError)
-      }
+    }
+  
+    //! Exécute le template
+    err = tmpl.Execute(w, topicDisplay)
+    if err != nil {
+      http.Error(w, "Error executing template", http.StatusInternalServerError)
     }
   }
 }

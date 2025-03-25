@@ -32,6 +32,7 @@ type Post struct {
     ParentID              uint   `gorm:"default:null"`
     TopicID               uint   `gorm:"not null"`
     IsLoggedIn            bool   `gorm:"-"`
+    UserConnectedID       uint   `gorm:"-"`
 }
 
 type Vote struct {
