@@ -13,6 +13,8 @@ type User struct {
     Password string `gorm:"size:255;not null"`
     Admin    bool
     Posts    []Post
+    FormattedCreationDate string `gorm:"-"`
+    FormattedUpdatedDate  string `gorm:"-"`
     TotalVote uint
     TotalPost uint
 }

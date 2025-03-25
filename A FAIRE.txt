@@ -1,7 +1,3 @@
-modification d'un post, si c'est la personne qui l'a créé
-suppression d'un post, si c'est la personne qui l'a créé ou administrateur
-(page topic)
-
 modification d'un topic si c'est la personne qui l'a créé ou administrateur
 suppression d'un topic, si c'est la personne qui l'a créé ou administrateur0
 (page listTopics)

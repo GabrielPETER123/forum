@@ -200,10 +200,12 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 //* Fonction qui gère la page de l'utilisateur
-func profil(w http.ResponseWriter, r *http.Request) {
+func profilHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/profil.html"))
   var profilDisplay ProfilDisplay
+
   if r.Method == http.MethodGet {
+    //* Récupère l'ID de l'utilisateur des cookies
     userCookie, err := r.Cookie("UserID")
     if err == nil {
       userID, _ := strconv.Atoi(userCookie.Value)
@@ -218,7 +220,15 @@ func profil(w http.ResponseWriter, r *http.Request) {
         profilDisplay.User = golang.User{}
       } else {
         profilDisplay.User = user
+        if len(posts) > 0 {
+          user.TotalPost = uint(len(posts))
+        } else {
+          user.TotalPost = 0
+        }
+        //* Fait le total des votes de l'utilisateur
+        user.TotalVote = golang.TotalVotes(user.ID)
       }
+      profilDisplay.User = user
     }
     tmpl.Execute(w, profilDisplay)
   }
@@ -592,7 +602,7 @@ func main() {
   http.HandleFunc("/", indexHandler)
   http.HandleFunc("/connexion", connexionHandler)
   http.HandleFunc("/inscription", inscriptionHandler)
-  http.HandleFunc("/profil", profil)
+  http.HandleFunc("/profil", profilHandler)
   http.HandleFunc("/post", postHandler)
   http.HandleFunc("/listTopics", listTopicsHandler)
   http.HandleFunc("/topic", topicHandler)

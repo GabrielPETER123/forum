@@ -21,7 +21,10 @@
      <div>
         <h1>Profil Utilisateur</h1>
         <h2>Utilisateur : {{.User.Username}}</h2>
+        <h2>Créé le {{.User.FormattedCreationDate}}</h2>
         <hr>
+        <p>Nombre total de Post : {{.User.TotalPost}}</p>
+        <p>Nombre total de Vote : {{.User.TotalVote}}</p>
         VOS POSTS
         {{range .Posts}}
             <div class="post">

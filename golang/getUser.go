@@ -17,6 +17,10 @@ func GetUserByID(userID int) User {
 	//* Copie de l'utilisateur
 	var user User
 	db.Where("ID = ?", userID).Find(&user)
+
+	user.FormattedCreationDate = user.CreatedAt.Format("02 January 2006 15:04")
+    user.FormattedUpdatedDate = user.UpdatedAt.Format("02 January 2006 15:04")
+
 	return user
 }
 
