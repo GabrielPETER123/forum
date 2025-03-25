@@ -141,7 +141,7 @@ func At(db *sql.DB, postID, userID int, content string) error {
     if err != nil {
         return fmt.Errorf("failed to add comment: %v", err)
     }
-    return nil // **Aucun problème rencontré.
+    return nil
 }
 
 // **DeletePost supprime un post et ses commentaires associés.
