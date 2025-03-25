@@ -135,7 +135,7 @@ func GetUserPosts(db *sql.DB, userID int) ([]Post, error) {
 }
 
 // **AddComment ajoute un commentaire à un post.
-func AddComment(db *sql.DB, postID, userID int, content string) error {
+func At(db *sql.DB, postID, userID int, content string) error {
     insertCommentSQL := `INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)`
     _, err := db.Exec(insertCommentSQL, postID, userID, content) // **Insertion du commentaire dans la BDD.
     if err != nil {

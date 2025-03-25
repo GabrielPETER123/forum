@@ -8,7 +8,7 @@ import (
 func TestInsertUser(t *testing.T) {
     db, err :=InitializeDB(":memory:")
     if err != nil {
-        t.Fatalf("Could not initialize test database: %v", err)
+        t.Fatalf("Could not initialize test database: %v", err) // Si jamais ça plante
     }
     defer CloseDB(db)
 
