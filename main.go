@@ -47,7 +47,6 @@ type TopicDisplay struct {
   Topic golang.Topic
   Posts []golang.Post
   User golang.User
-  IsLoggedIn bool
   ErrTopicMessage string
 }
 
@@ -359,11 +358,20 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     }
     topicDisplay.Topic = golang.GetTopic(topicID)
 
+    //* Récupère les posts pour mettre à jour les votes et formatte les dates
+    posts := golang.GetPostsByTopicID(topicID)
+    for i := range posts {
+      posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
+    }
+    topicDisplay.Posts = posts
+
     //* Récupère l'ID de l'utilisateur des cookies
     userCookie, err := r.Cookie("UserID")
     if err != nil {
       topicDisplay.ErrTopicMessage = "Connectez vous pour poster (PAS CONNECTÉ)!"
-      topicDisplay.IsLoggedIn = false
+      for i := range topicDisplay.Posts {
+      topicDisplay.Posts[i].IsLoggedIn = false
+      }
     } else {
       userID, err := strconv.Atoi(userCookie.Value)
       if err != nil {
@@ -371,15 +379,10 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
         return
       }
       topicDisplay.User = golang.GetUserByID(userID)
-      topicDisplay.IsLoggedIn = true
+      for i := range topicDisplay.Posts {
+        topicDisplay.Posts[i].IsLoggedIn = true
+      }
     }
-
-    //* Récupère les posts pour mettre à jour les votes et formatte les dates
-    posts := golang.GetPostsByTopicID(topicID)
-    for i := range posts {
-      posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
-    }
-    topicDisplay.Posts = posts
 
     //! Exécute le template
     err = tmpl.Execute(w, topicDisplay)
@@ -416,6 +419,14 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       return
     }
 
+    //* Récupère les posts pour mettre à jour les votes et formatte les dates
+    posts := golang.GetPostsByTopicID(topicID)
+    for i := range posts {
+      posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
+    }
+    topicDisplay.Posts = posts
+
+    //* Crée un post
     var postSend = golang.Post{}
     postSend.TopicID = uint(topicID)
     postSend.Title = title
@@ -425,7 +436,9 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     userCookie, err := r.Cookie("UserID")
     if err != nil {
       topicDisplay.ErrTopicMessage = "Connectez vous pour poster (PAS CONNECTÉ)!"
-      topicDisplay.IsLoggedIn = false
+      for i := range topicDisplay.Posts {
+      topicDisplay.Posts[i].IsLoggedIn = false
+      }
     } else {
       userID, err := strconv.Atoi(userCookie.Value)
       if err != nil {
@@ -433,7 +446,9 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
         return
       }
       postSend.UserID = uint(userID)
-      topicDisplay.IsLoggedIn = true
+      for i := range topicDisplay.Posts {
+      topicDisplay.Posts[i].IsLoggedIn = true
+      }
 
       //* Vérifie si l'utilisateur est connecté
       if userCookie != nil && userCookie.Value != "" {
@@ -489,13 +504,6 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       } else {
         topicDisplay.ErrTopicMessage = "Connectez le titre ou le contenue pour modifier ! (VEUX MODIFIER)"
       }
-
-      //* Récupère les posts pour mettre à jour les votes et formatte les dates
-      posts := golang.GetPostsByTopicID(topicID)
-      for i := range posts {
-        posts[i].TotalUp, posts[i].TotalDown = golang.Totals(posts[i].ID)
-      }
-      topicDisplay.Posts = posts
 
       //! Exécute le template
       err = tmpl.Execute(w, topicDisplay)

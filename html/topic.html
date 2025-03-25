@@ -20,7 +20,7 @@
         <h2>{{.Topic.Name}}</h2>
         <p>{{.Topic.Description}}</p>
 
-       <!-- PUBLIER UN POST -->
+        <!-- PUBLIER UN POST -->
         <div id="postForm">
             <h1>Créer un post</h1>
             <form method="post">
@@ -38,62 +38,61 @@
         </div>
 
         <!-- AFFICHER LES POSTS -->
-            <div id="post">
+        <div id="post">
             <h1>Posts</h1>
             {{range .Posts}}
-                <div class="post">
-                    <h2>{{.Title}}</h2>
-                    <p>{{.Text}}</p>
-                    <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
+            <div class="post">
+                <h2>{{.Title}}</h2>
+                <p>{{.Text}}</p>
+                <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
 
-                    <!-- BOUTONS DE VOTE -->
-                    <div class="vote-buttons">
-                        <form method="post" style="display: inline;">
-                            <input type="hidden" name="postId" value="{{.ID}}">
-                            <input type="hidden" name="voteType" value="up">
-                            <button type="submit" class="upvote"><i class="fas fa-thumbs-up"></i>{{.TotalUp}}</button>
-                        </form>
-                        <form method="post" style="display: inline;">
-                            <input type="hidden" name="postId" value="{{.ID}}">
-                            <input type="hidden" name="voteType" value="down">
-                            <button type="submit" class="downvote"><i class="fas fa-thumbs-down">{{.TotalDown}}</i></button>
-                        </form>
-                    </div>
-
-                    <!-- BOUTON MODIFIER LE POST -->
-                    {{if .IsLoggedIn}}
-                        {{if eq .User.ID .UserID}}
-                            <div>
-                                <form method="post">
-                                    <!-- Bouton pour afficher le formulaire de modification du post -->
-                                    <button type="submit">Modifier le post</button>
-                                </form>
-
-                                <form method="post">
-                                    <input type="hidden" name="modifyPostId" value="{{.ID}}">
-                                    <textarea id="title" name="modifyTitle">{{.Title}}</textarea>
-                                    <br>
-                                    <textarea id="content" name="modifyContent">{{.Text}}</textarea>
-                                    <br>
-                                    <button type="submit" id="textPost">Modifier</button>
-                                    <br>
-                                    <button>Annuler</button>
-                                </form>
-                            </div>
-                        {{end}}
-                    {{end}}
-                    
-                    <!-- BOUTON VOIR LE POST -->
-                    <div>
-                        <form method="get" action="../post">
-                            <input type="hidden" name="postId" value="{{.ID}}">
-                            <button type="submit">Voir le post</button>
-                        </form>
-                    </div>
+                <!-- BOUTONS DE VOTE -->
+                <div class="vote-buttons">
+                    <form method="post" style="display: inline;">
+                        <input type="hidden" name="postId" value="{{.ID}}">
+                        <input type="hidden" name="voteType" value="up">
+                        <button type="submit" class="upvote"><i class="fas fa-thumbs-up"></i>{{.TotalUp}}</button>
+                    </form>
+                    <form method="post" style="display: inline;">
+                        <input type="hidden" name="postId" value="{{.ID}}">
+                        <input type="hidden" name="voteType" value="down">
+                        <button type="submit" class="downvote"><i class="fas fa-thumbs-down">{{.TotalDown}}</i></button>
+                    </form>
                 </div>
-                <hr>
+
+                <!-- BOUTON MODIFIER LE POST -->
+                <div class="modify-post">
+                    {{if and (eq .User.ID .UserID) .IsLoggedIn}}
+                        <div>
+                            <form method="post">
+                                <!-- Bouton pour afficher le formulaire de modification du post -->
+                                <button type="submit">Modifier le post</button>
+                            </form>
+
+                            <form method="post">
+                                <input type="hidden" name="modifyPostId" value="{{.ID}}">
+                                <textarea id="title" name="modifyTitle">{{.Title}}</textarea>
+                                <br>
+                                <textarea id="content" name="modifyContent">{{.Text}}</textarea>
+                                <br>
+                                <button type="submit" id="textPost">Modifier</button>
+                                <br>
+                                <button type="button" onclick="this.form.reset();">Annuler</button>
+                            </form>
+                        </div>
+                    {{end}}
+                </div>
+
+                <!-- BOUTON VOIR LE POST -->
+                <div>
+                    <form method="get" action="../post">
+                        <input type="hidden" name="postId" value="{{.ID}}">
+                        <button type="submit">Voir le post</button>
+                    </form>
+                </div>
+            </div>
+            <hr>
             {{end}}
         </div>
-
     </body>
 </html>

@@ -29,6 +29,7 @@ type Post struct {
     Comments              []Post `gorm:"foreignKey:ParentID"`
     ParentID              uint   `gorm:"default:null"`
     TopicID               uint   `gorm:"not null"`
+    IsLoggedIn            bool   `gorm:"-"`
 }
 
 type Vote struct {
