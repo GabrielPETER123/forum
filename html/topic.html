@@ -91,6 +91,7 @@
                             <button type="submit">Supprimer le post</button>
                         </form>
                     {{end}}
+                </div>
 
                 <!-- BOUTON VOIR LE POST -->
                 <div>
@@ -99,6 +100,40 @@
                         <button type="submit">Voir le post</button>
                     </form>
                 </div>
+            </div>
+
+            <!-- COMMENTER LE POST -->
+            <div id="comment">
+                <div>
+                {{range .Comments}}
+                    {{.Text}}
+                    <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
+                
+                    <!-- SUPPRIMER LE COMMENTAIRE -->
+                    <div>
+                        {{if and (eq .UserConnectedID .UserID) .IsLoggedIn}}
+                            <form method="post">
+                                <input type="hidden" name="deleteCommentId" value="{{.ID}}">
+                                <button type="submit">Supprimer le commentaire</button>
+                            </form>
+                        {{end}}
+                    </div>
+                {{end}}
+                </div>
+
+                
+                {{if .IsLoggedIn}}
+                <div class="comment-form">
+                    <h1>Créer un commentaire</h1>
+                    <form method="post">
+                        <input type="hidden" name="commentPostId" value="{{.ID}}">
+                        <textarea id="commentContent" name="commentContent" placeholder="Écrire votre commentaire ici..."></textarea>
+                        <br>
+                        <button type="submit" id="textPost">Publier</button>
+                    </form>
+                    <br>
+                </div>
+                {{end}}
             </div>
             <hr>
             {{end}}

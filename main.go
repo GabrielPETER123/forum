@@ -1,13 +1,14 @@
 package main
 
 import (
-  "fmt"
-  "net/http"
-  "html/template"
-  "forum/golang"
-  "regexp"
-  "strconv"
-  "golang.org/x/crypto/bcrypt"
+	"fmt"
+	"forum/golang"
+	"html/template"
+	"net/http"
+	"regexp"
+	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -209,7 +210,7 @@ func profilHandler(w http.ResponseWriter, r *http.Request) {
     userCookie, err := r.Cookie("UserID")
     if err == nil {
       userID, _ := strconv.Atoi(userCookie.Value)
-      fmt.Println("User ID:", userID)
+      // fmt.Println("User ID:", userID)
   
       //* Récupère les posts de l'utilisateur
       posts := golang.GetPostsByUserID(userID)
@@ -241,7 +242,7 @@ func profilHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    fmt.Println("Delete post ID:", deletePostID)
+    // fmt.Println("Delete post ID:", deletePostID)
     golang.DeletePost(deletePostID)
     
     http.Redirect(w, r, "/profil", http.StatusSeeOther)
@@ -365,7 +366,6 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
   topicDisplay := TopicDisplay{}
   
   if r.Method == http.MethodGet {
-
     //* Récupère le topicID dans l'URL
     topicIDStr := r.URL.Query().Get("topicId")
     if topicIDStr == "" {
@@ -403,9 +403,14 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       }
       topicDisplay.User = golang.GetUserByID(userID)
 
+      //* Sert à afficher les boutons
       for i := range topicDisplay.Posts {
         topicDisplay.Posts[i].IsLoggedIn = true
         topicDisplay.Posts[i].UserConnectedID = uint(userID)
+        for j := range topicDisplay.Posts[i].Comments {
+          topicDisplay.Posts[i].Comments[j].UserConnectedID = uint(userID)
+          topicDisplay.Posts[i].Comments[j].IsLoggedIn = true
+        }
       }
     }
 
@@ -438,7 +443,12 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
     
     //* Info de la suppression
     deletePostIDStr := r.FormValue("deletePostId")
+    deleteCommentIDStr := r.FormValue("deleteCommentId")
 
+    //* Info du commentaire
+    commentPostIDStr := r.FormValue("commentPostId")
+    commentContent := r.FormValue("commentContent")
+    
     //* Récupère le topicID dans l'URL
     topicIDStr := r.FormValue("topicId")
     topicID, err := strconv.Atoi(topicIDStr)
@@ -459,13 +469,14 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
 
     if err != nil {
       topicDisplay.ErrTopicMessage = "Connectez vous pour poster (PAS CONNECTÉ)!"
-
+      //* Fait en sorte que les boutons ne s'affichent pas
       for i := range topicDisplay.Posts {
         topicDisplay.Posts[i].IsLoggedIn = false
         topicDisplay.Posts[i].UserConnectedID = 0
       }
 
     } else {
+    
       //* Création de l'ID de l'utilisateur
       userID, err := strconv.Atoi(userCookie.Value)
       if err != nil {
@@ -478,6 +489,10 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       for i := range topicDisplay.Posts {
         topicDisplay.Posts[i].IsLoggedIn = true
         topicDisplay.Posts[i].UserConnectedID = uint(userID)
+        for j := range topicDisplay.Posts[i].Comments {
+          topicDisplay.Posts[i].Comments[j].UserConnectedID = uint(userID)
+          topicDisplay.Posts[i].Comments[j].IsLoggedIn = true
+        }
       }
     
       //* Vérifie si l'utilisateur veux poster
@@ -504,16 +519,17 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
           http.Error(w, "Invalid post ID", http.StatusBadRequest)
           return
         }
-        
+        //* Récupère l'ID de l'utilisateur des cookies
         userID, err := strconv.Atoi(userCookie.Value)
         if err != nil {
           fmt.Println("Error getting user ID")
           http.Error(w, "Invalid user ID", http.StatusBadRequest)
           return
         }
+        //* Ajoute le vote dans la base de données
         golang.Votes(uint(postId), uint(userID), vote)
 
-        // Redirige l'utilisateur après avoir traité le vote
+        //* Redirige l'utilisateur après avoir traité le vote
         http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
         return
       } else {
@@ -528,6 +544,7 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
           return
         }
 
+        //* Crée un post
         var postSend = golang.Post{}
         postSend.ID = uint(modifyPostID)
         postSend.Title = modifyTitle
@@ -549,14 +566,52 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
           return
         }
 
-        fmt.Println("Delete post ID:", deletePostID)
+        // fmt.Println("Delete post ID:", deletePostID)
         golang.DeletePost(deletePostID)
 
         http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
         return
       }
+
+      //* Vérifie si l'utilisateur veut commenter
+      if commentContent != "" && commentPostIDStr != "" {
+        //* Récupère l'ID du post
+        commentPostID, err := strconv.Atoi(commentPostIDStr)
+        if err != nil {
+          http.Error(w, "Invalid post ID", http.StatusBadRequest)
+          return
+        }
+
+        //* Crée un commentaire
+        var commentSend = golang.Comment{}
+        commentSend.PostID = uint(commentPostID)
+        commentSend.Text = commentContent
+        commentSend.UserID = uint(userID)
+
+        golang.AddComment(commentSend)
+
+        http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
+        return
+      } else {
+        topicDisplay.ErrTopicMessage = "Connectez vous pour commenter ! (VEUX COMMENTER)"
+      }
+
+      //* Supprimer le commentaire
+      if deleteCommentIDStr != "" {
+        deleteCommentID, err := strconv.Atoi(deleteCommentIDStr)
+        if err != nil {
+          http.Error(w, "Invalid post ID", http.StatusBadRequest)
+          return
+        }
+
+        // fmt.Println("Delete comment ID:", deleteCommentID)
+        golang.DeleteComment(uint(deleteCommentID))
+
+        http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
+        return
+      }
     }
-  
+
     //! Exécute le template
     err = tmpl.Execute(w, topicDisplay)
     if err != nil {
@@ -578,7 +633,14 @@ func actifUser(w http.ResponseWriter, r *http.Request) {
       } else {
         users.Users[i].TotalPost = 0
       }
-
+      //* Fait le total des commentaires de l'utilisateur
+      comments := golang.GetCommentsByUserID(int(users.Users[i].ID))
+      if len(comments) > 0 {
+        users.Users[i].TotalComment = uint(len(comments))
+      } else {
+        users.Users[i].TotalComment = 0
+      }
+      
       //* Fait le total des votes de l'utilisateur
       users.Users[i].TotalVote = golang.TotalVotes(users.Users[i].ID)
     }
@@ -595,6 +657,18 @@ func actifUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//* Fonction qui gère la page de l'admin
+func adminHandler(w http.ResponseWriter, r *http.Request) {
+  tmpl := template.Must(template.ParseFiles("html/admin.html"))
+  if r.Method == http.MethodGet {
+    tmpl.Execute(w, nil)
+  }
+  if r.Method == http.MethodPost {
+    tmpl.Execute(w, nil)
+  }
+
+}
+
 func main() {
 
   golang.CreateAdminUser()
@@ -607,6 +681,8 @@ func main() {
   http.HandleFunc("/listTopics", listTopicsHandler)
   http.HandleFunc("/topic", topicHandler)
   http.HandleFunc("/actifUser", actifUser)
+  http.HandleFunc("/admin", adminHandler)
+
   http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
 	fmt.Println("http://localhost:8080/")
 	http.ListenAndServe(":8080", nil)

@@ -82,16 +82,21 @@ func GetPostsByTopicID(topicID int) []Post {
 
 	//* Copie des posts du topic
 	var posts []Post
-	db.Where("topic_id = ?", topicID).Find(&posts)
+	db.Preload("Comments.User").Where("topic_id = ?", topicID).Find(&posts)
 
 	for i := range posts {
-        posts[i].User = GetUserByID(int(posts[i].UserID)) // Remplissez le champ User
+        posts[i].User = GetUserByID(int(posts[i].UserID))
     }
 
 	for i := range posts {
         posts[i].FormattedCreationDate = posts[i].CreatedAt.Format("02 January 2006 15:04")
         posts[i].FormattedUpdatedDate = posts[i].UpdatedAt.Format("02 January 2006 15:04")
-    }
-
+		for j := range posts[i].Comments {
+			posts[i].Comments[j].FormattedCreationDate = posts[i].Comments[j].CreatedAt.Format("02 January 2006 15:04")
+			posts[i].Comments[j].FormattedUpdatedDate = posts[i].Comments[j].UpdatedAt.Format("02 January 2006 15:04")
+		}
+	}
+	
 	return posts
 }
+

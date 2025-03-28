@@ -17,12 +17,13 @@ type User struct {
     FormattedUpdatedDate  string `gorm:"-"`
     TotalVote uint
     TotalPost uint
+    TotalComment uint
 }
 
 type Post struct {
     gorm.Model
-    Title                 string
-    Text                  string `gorm:"size:255;not null"`
+    Title                 string `gorm:"size:255;not null"`
+    Text                  string `gorm:"not null"`
     UserID                uint
     User                  User
     FormattedCreationDate string `gorm:"-"`
@@ -30,8 +31,7 @@ type Post struct {
     TotalUp               uint
     TotalDown             uint
     Votes                 []Vote `gorm:"foreignKey:PostID"`
-    Comments              []Post `gorm:"foreignKey:ParentID"`
-    ParentID              uint   `gorm:"default:null"`
+    Comments              []Comment `gorm:"foreignKey:PostID"`
     TopicID               uint   `gorm:"not null"`
     IsLoggedIn            bool   `gorm:"-"`
     UserConnectedID       uint   `gorm:"-"`
@@ -54,4 +54,17 @@ type Topic struct {
     FormattedCreationDate string `gorm:"-"`
     FormattedUpdatedDate  string `gorm:"-"`
     Posts       []Post `gorm:"foreignKey:TopicID"`
+}
+
+type Comment struct {
+    gorm.Model
+    Text                  string `gorm:"not null"`
+    UserID                uint   `gorm:"column:user_id"`
+    User                  User   `gorm:"foreignKey:UserID"`
+    PostID                uint
+    Post                  Post
+    IsLoggedIn            bool   `gorm:"-"`
+    UserConnectedID       uint   `gorm:"-"`
+    FormattedCreationDate string `gorm:"-"`
+    FormattedUpdatedDate  string `gorm:"-"`
 }

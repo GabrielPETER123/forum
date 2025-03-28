@@ -2,6 +2,8 @@ modification d'un topic si c'est la personne qui l'a créé ou administrateur
 suppression d'un topic, si c'est la personne qui l'a créé ou administrateur0
 (page listTopics)
 
+possibilité d'ajouter des commentaires sur les posts (quand on est connecté)
+(page topic)
 
 pageAdmin : Afficher les comptes des utilisateur avec barre de recherche
 
