@@ -228,7 +228,6 @@ func ExportDataToFile(db *sql.DB, filename string) error {
         file.WriteString(fmt.Sprintf("ID: %d, UserID: %d, Title: %s, Content: %s, CreatedAt: %s\n", post.ID, post.UserID, post.Title, post.Content, post.CreatedAt)) // **Écrit les infos du post dans le fichier.
     }
 
-    // **Exporte les commentaires.
     rows, err = db.Query("SELECT id, post_id, user_id, content, created_at FROM comments")
     if err != nil {
         return fmt.Errorf("failed to query comments: %v", err)
