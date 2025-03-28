@@ -10,6 +10,25 @@
     <div class="box"></div>
     <h1>Bienvenue </h1>
     <h2>Chez les alcooliques anonymes !</h2>
-
+    <form action="votre_script_de_traitement.php" method="POST">
+        <!-- Champ pour le pseudo -->
+        <label for="pseudo">Pseudo :</label>
+        <input type="text" id="pseudo" name="pseudo" required>
+        <br><br>
+        
+        <!-- Champ pour l'adresse mail -->
+        <label for="email">Adresse mail :</label>
+        <input type="email" id="email" name="email" required>
+        <br><br>
+        
+        <!-- Champ pour le mot de passe -->
+        <label for="motdepasse">Mot de passe :</label>
+        <input type="password" id="motdepasse" name="motdepasse" required>
+        <br><br>
+        
+        
+        <input type="submit" value="S'inscrire">
+      </form>
+      
 </body>
 </html>

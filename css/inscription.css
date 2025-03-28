@@ -1,5 +1,5 @@
 body {
-    background-image: url(../assets/Beer_Sky_Mug_Grass_525139_1920x1080.jpg);
+    background-image: url(../assets/fondinsption.jpg);
     
 }
 
@@ -17,7 +17,7 @@ body {
     border-radius: 30px;
     transition: transform 0.3s, box-shadow 0.3s;
     margin-top: 10%;
-    margin-left: 27%;
+    margin-left: 15%;
     gap: 10px;
     flex-direction: row;
 
@@ -33,7 +33,7 @@ h1 {
     font-size: 2.7em;
     display: flex;
     margin-top: -31%;
-    margin-left: 41%;
+    margin-left: 31%;
 
 }
 
@@ -42,6 +42,50 @@ h2{
     font-size: 1.9em;
     display: flex;
     margin-top: -1%;
-    margin-left: 34%;
+    margin-left: 24%;
 
 }
+
+
+ form {
+    background-color: transparent#fff;
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 10px;
+    margin-left: 22.5%;
+    margin-top: -1%;
+    
+  }
+  
+  form label {
+    display: block;
+    color: white;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  /* Style des champs de saisie */
+  form input[type="text"],
+  form input[type="email"],
+  form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+  
+  /* Style du bouton de soumission */
+  form input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
