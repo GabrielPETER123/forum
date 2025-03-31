@@ -16,22 +16,35 @@
             <a href="../listeTopics" class="liste">Liste des Topics</a>
             <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
         </div>
+        <div class="box"></div>
         <h1>
-            Inscription
+            Bienvenue
         </h1>
+
+        <h2> 
+            Chez les alcooliques anonymes !
+        </h2>
 
         <div>
             <form method="post">
-                <input type="text" name="username" placeholder="Nom d'utilisateur">
-                <br>
-                <input type="email" name="email" id="email" placeholder="Email">
-                <br>
-                <input type="password" name="password" id="password" placeholder="Mot de passe">
-                <br>
-                <button type="submit">S'inscrire</button>
+                <label for="username">Nom d'utilisateur :</label>
+                <input type="text" name="username" id="username" required>
+                <br><br>
+
+                <label for="email">Adresse Email :</label>
+                <input type="email" name="email" id="email" required>
+                <br><br>
+                
+                <label for="password">Mot de passe :</label>
+                <input type="password" name="password" id="password" required>
+                <br><br>
+                
+                <input type="submit" value="S'inscrire">
             </form>
+            
             <br>
-            {{.ErrInscriptionMessage}}
+            <!-- Display error message dynamically -->
+            <span>{{.ErrInscriptionMessage}}</span>
             <hr>
         </div>
 

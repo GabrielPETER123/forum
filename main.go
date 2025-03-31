@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -188,12 +187,10 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
       userSend.Password = string(hashedPassword)
 
       //* Écris dans la base de données le User
-      fmt.Println("Starting AddUserInDataBase...")
       golang.AddUserInDataBase(userSend)
-      fmt.Println("AddUserInDataBase ended.")
+
     } else if golang.CheckUser(username) && errInscription != "" {
-      errInscription = "Nom déjà utilisé.\n"
-      fmt.Println(errInscription)
+      errInscription = "Nom déjà utilisé.\n" 
     }
     inscriptionDisplay.ErrInscriptionMessage = errInscription
   }
