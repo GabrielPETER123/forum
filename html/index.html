@@ -21,6 +21,7 @@
             <br><br>
             
             <form method="post">
+            <h2>Rechercher un utilisateur, un post ou un topic !</h2>
             <label for="search">Chercher :</label>
             <input type="text" name="search" id="search">
             <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -29,6 +30,7 @@
         </div>
 
         <div class="result">
+            {{if .IsSearch}}
             <h2>Résultats de la recherche :</h2>
             <div class="resultUsers">
                 {{range .SearchUsers}}
@@ -47,7 +49,7 @@
                     <a href="../topic?topicId={{.ID}}">{{.Name}}</a>
                 {{end}}
             </div>
-        
+            {{end}}
         </div>
 
     </body>

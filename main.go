@@ -23,6 +23,7 @@ type IndexDisplay struct {
   SearchPosts []golang.Post
   SearchTopics []golang.Topic
   ErrSearchMessage string
+  IsSearch bool
 }
 
 type ConnexionDisplay struct {
@@ -69,6 +70,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
   }
   
   if r.Method == http.MethodPost {
+    indexDisplay.IsSearch = false
     err := r.ParseForm()
     if err != nil {
       http.Error(w, "Error parsing form.", http.StatusBadRequest)
@@ -114,12 +116,14 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
           SearchUsers: searchUsers,
           SearchPosts: searchPosts,
           SearchTopics: searchTopics,
+          IsSearch: true,
+          ErrSearchMessage: "",
         }
-        indexDisplay.ErrSearchMessage = ""
       }
     }
   }
-
+  fmt.Println("Searching ?", indexDisplay.IsSearch)
+  fmt.Println("Search users:", indexDisplay.SearchUsers)
   //! Exécute le template
   tmpl.Execute(w, indexDisplay)
 }
