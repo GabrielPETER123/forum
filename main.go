@@ -682,7 +682,6 @@ func main() {
 
   http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
   http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-  http.Handle("/html/", http.StripPrefix("/html/", http.FileServer(http.Dir("html"))))
   
 	fmt.Println("http://localhost:8080/")
 	http.ListenAndServe(":8080", nil)
