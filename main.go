@@ -19,6 +19,10 @@ var (
 )
 
 type IndexDisplay struct {
+  SearchUsers []golang.User
+  SearchPosts []golang.Post
+  SearchTopics []golang.Topic
+  ErrSearchMessage string
 }
 
 type ConnexionDisplay struct {
@@ -60,13 +64,64 @@ type ActifUserDisplay struct {
 //* Fonction qui gère la page d'accueil
 func indexHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/index.html"))
+  var indexDisplay IndexDisplay
   if r.Method == http.MethodGet {
-    tmpl.Execute(w, nil)
   }
   
   if r.Method == http.MethodPost {
-    tmpl.Execute(w, nil)
+    err := r.ParseForm()
+    if err != nil {
+      http.Error(w, "Error parsing form.", http.StatusBadRequest)
+      return
+    }
+    
+    //* Info de la recherche
+    search := r.FormValue("search")
+    
+    //* Recherche dans la base de données 
+    if search != "" {
+      //* Récupère les utilisateurs, posts et topics correspondant à la recherche
+      searchUsers, searchPosts, searchTopics := golang.SearchUserPostTopic(search)
+      
+      if len(searchUsers) == 0 && len(searchPosts) == 0 && len(searchTopics) == 0 {
+        indexDisplay.ErrSearchMessage = "Aucun résultat trouvé."
+        
+      } else {
+        if len(searchUsers) > 0 {
+          for i := range searchUsers {
+            //* Fait le total des posts de l'utilisateur
+            posts := golang.GetPostsByUserID(int(searchUsers[i].ID))
+            if len(posts) > 0 {
+              searchUsers[i].TotalPost = uint(len(posts))
+            } else {
+              searchUsers[i].TotalPost = 0
+            }
+
+            //* Fait le total des commentaires de l'utilisateur
+            comments := golang.GetCommentsByUserID(int(searchUsers[i].ID))
+            if len(comments) > 0 {
+              searchUsers[i].TotalComment = uint(len(comments))
+            } else {
+              searchUsers[i].TotalComment = 0
+            }
+      
+            //* Fait le total des votes de l'utilisateur
+            searchUsers[i].TotalVote = golang.TotalVotes(searchUsers[i].ID)
+          }
+        }
+        //* Met dans la template les utilisateurs, posts et topics trouvés
+        indexDisplay = IndexDisplay{
+          SearchUsers: searchUsers,
+          SearchPosts: searchPosts,
+          SearchTopics: searchTopics,
+        }
+        indexDisplay.ErrSearchMessage = ""
+      }
+    }
   }
+
+  //! Exécute le template
+  tmpl.Execute(w, indexDisplay)
 }
   
 //* Fonction qui gère la page de connexion
