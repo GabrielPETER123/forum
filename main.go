@@ -122,8 +122,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
       }
     }
   }
-  fmt.Println("Searching ?", indexDisplay.IsSearch)
-  fmt.Println("Search users:", indexDisplay.SearchUsers)
+  
   //! Exécute le template
   tmpl.Execute(w, indexDisplay)
 }
