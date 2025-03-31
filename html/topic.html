@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../css/connexion.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+        <title>Topic</title>
+    </head>
+    <body>
+
+        <!-- HEADER -->
+        <div class="header">
+            <a href="../" class="forum">Forum</a>
+            <a href="../tendances" class="topics">Topics Tendances</a>
+            <a href="../listTopics" class="liste">Liste des Topics</a>
+            <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
+        </div>
+
+        <h2>{{.Topic.Name}}</h2>
+        <p>{{.Topic.Description}}</p>
+
+        <!-- PUBLIER UN POST -->
+        <div id="postForm">
+            <h1>Créer un post</h1>
+            <form method="post">
+                <input type="hidden" name="topicId" value="{{.Topic.ID}}">
+                <textarea id="title" name="title" placeholder="Titre de votre post..."></textarea>
+                <br>
+                <textarea id="content" name="content" placeholder="Écrire votre post ici..."></textarea>
+                <br>
+                <button type="submit" id="textPost">Publier</button>
+            </form>
+            <br>
+            <p>
+                {{.ErrTopicMessage}}
+            </p>
+        </div>
+
+        <!-- AFFICHER LES POSTS -->
+        <div id="post">
+            <h1>Posts</h1>
+            {{range .Posts}}
+            <div class="post">
+                <h2>{{.Title}}</h2>
+                <p>{{.Text}}</p>
+                <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
+
+                <!-- BOUTONS DE VOTE -->
+                <div class="vote-buttons">
+                    <form method="post" style="display: inline;">
+                        <input type="hidden" name="postId" value="{{.ID}}">
+                        <input type="hidden" name="voteType" value="up">
+                        <button type="submit" class="upvote"><i class="fas fa-thumbs-up"></i>{{.TotalUp}}</button>
+                    </form>
+                    <form method="post" style="display: inline;">
+                        <input type="hidden" name="postId" value="{{.ID}}">
+                        <input type="hidden" name="voteType" value="down">
+                        <button type="submit" class="downvote"><i class="fas fa-thumbs-down">{{.TotalDown}}</i></button>
+                    </form>
+                </div>
+
+                <!-- BOUTON MODIFIER LE POST -->
+                <div class="modify-post">
+                    {{if and (eq .UserConnectedID .UserID) .IsLoggedIn}}
+                        <div>
+                            <form method="post">
+                                <!-- Bouton pour afficher le formulaire de modification du post -->
+                                <button type="submit">Modifier le post</button>
+                            </form>
+
+                            <form method="post">
+                                <input type="hidden" name="modifyPostId" value="{{.ID}}">
+                                <textarea id="title" name="modifyTitle">{{.Title}}</textarea>
+                                <br>
+                                <textarea id="content" name="modifyContent">{{.Text}}</textarea>
+                                <br>
+                                <button type="submit" id="textPost">Modifier</button>
+                                <br>
+                                <button type="button" onclick="this.form.reset();">Annuler</button>
+                            </form>
+                        </div>
+                    {{end}}
+                </div>
+
+                <!-- BOUTON SUPPRIMER LE POST -->
+                <div class="delete-post">
+                    {{if and (eq .UserConnectedID .UserID) .IsLoggedIn}}
+                        <form method="post">
+                            <input type="hidden" name="deletePostId" value="{{.ID}}">
+                            <button type="submit">Supprimer le post</button>
+                        </form>
+                    {{end}}
+                </div>
+
+                <!-- BOUTON VOIR LE POST -->
+                <div>
+                    <form method="get" action="../post">
+                        <input type="hidden" name="postId" value="{{.ID}}">
+                        <button type="submit">Voir le post</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- COMMENTER LE POST -->
+            <div id="comment">
+                <div>
+                {{range .Comments}}
+                    {{.Text}}
+                    <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
+                
+                    <!-- SUPPRIMER LE COMMENTAIRE -->
+                    <div>
+                        {{if and (eq .UserConnectedID .UserID) .IsLoggedIn}}
+                            <form method="post">
+                                <input type="hidden" name="deleteCommentId" value="{{.ID}}">
+                                <button type="submit">Supprimer le commentaire</button>
+                            </form>
+                        {{end}}
+                    </div>
+                {{end}}
+                </div>
+
+                
+                {{if .IsLoggedIn}}
+                <div class="comment-form">
+                    <h1>Créer un commentaire</h1>
+                    <form method="post">
+                        <input type="hidden" name="commentPostId" value="{{.ID}}">
+                        <textarea id="commentContent" name="commentContent" placeholder="Écrire votre commentaire ici..."></textarea>
+                        <br>
+                        <button type="submit" id="textPost">Publier</button>
+                    </form>
+                    <br>
+                </div>
+                {{end}}
+            </div>
+            <hr>
+            {{end}}
+        </div>
+    </body>
+</html>

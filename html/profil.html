@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/connexion.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <title>Page Utilisateur</title>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <a href="../" class="forum">Forum</a>
+        <a href="../tendances" class="topics">Topics Tendances</a>
+        <a href="../listTopics" class="liste">Liste des Topics</a>
+        <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
+    </div>
+
+
+    <!-- CONTENU -->
+     <div>
+        <h1>Profil Utilisateur</h1>
+        <h2>Utilisateur : {{.User.Username}}</h2>
+        <h2>Créé le {{.User.FormattedCreationDate}}</h2>
+        <hr>
+        <p>Nombre total de Post : {{.User.TotalPost}}</p>
+        <p>Nombre total de Vote : {{.User.TotalVote}}</p>
+        VOS POSTS
+        {{range .Posts}}
+            <div class="post">
+                <h2>Titre : {{.Title}}</h2>
+                <p>Contenue : {{.Text}}</p>
+            <form method="post">
+                <input type="hidden" name="deletePost" value="{{.ID}}">
+                <button type="submit">Supprimer</button>
+            </form>
+            </div>
+        {{else}}
+            <p>No posts found.</p>
+        {{end}}
+     </div>
+
+</body>
+</html>

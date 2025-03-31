@@ -1,0 +1,121 @@
+body {
+    background-image: url(../assets/biere.jpg);
+}
+
+.header {
+    background-color: black;
+    padding: 3px;
+    display: flex;
+    border-radius: 20px;
+    height: 85px;
+    margin-top: 1%;
+}
+
+.forum {
+    color: white;
+    margin-left: 2%;
+    font-size: 3em;
+    display: flex;
+    margin-top: 1%;
+    margin-left: 4.5%;
+    text-decoration: none;
+}
+
+.forum:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
+}
+
+.topics {
+    color: white;
+    display: flex;
+    margin-top: 1.5%;
+    margin-left: 8%;
+    font-size: 2.3em;
+    text-decoration: none;
+   
+}
+.topics:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
+}
+
+.liste {
+    color: white;
+    display: flex;
+    margin-top: 1.5%;
+    margin-left: 8%;
+    font-size: 2.3em;
+    text-decoration: none;
+}
+
+.liste:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
+}
+
+.Utilisateurs {
+    color: white;
+    display: flex;
+    margin-top: 1.5%;
+    margin-left: 8%;
+    font-size: 2.3em;
+    text-decoration: none;
+}
+
+.Utilisateurs:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
+}
+
+.login {
+    color: white;
+    display: flex;
+    margin-top: -1.6%;
+    margin-left: 6%;
+    font-size: 2.2em;
+}
+
+.login:hover{
+    text-shadow:  
+    0 0 2px #fff,  
+    0 0 5px rgba(255, 255, 255, 0.6),  
+    0 0 10px rgba(110, 109, 121, 0.5);
+
+}
+
+.box {
+    width: 1250px;
+    height: 1350px;
+    background-color: rgb(98, 98, 100);
+    color: transparent;
+    display: flex;
+    justify-content: flex;
+    align-items: flex;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 30px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-top: 6%;
+    margin-left: 13.5%;
+    gap: 10px;
+    flex-direction: row;
+
+}
+
+#actif {
+    color: rgb(175, 112, 4);
+}

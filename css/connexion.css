@@ -1,0 +1,144 @@
+body {
+    background-image: url(../assets/fondconnexioi.jpg);
+    color: white;
+
+}
+
+.box {
+    width: 750px;
+    height: 550px;
+    background-color: rgb(51, 51, 52);
+    color: transparent;
+    display: flex;
+    justify-content: flex;
+    align-items: flex;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 30px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-top: 10%;
+    margin-left: 27%;
+    gap: 10px;
+    flex-direction: row;
+
+}
+
+.box:hover {
+    box-shadow: 0 0 20px rgb(245, 159, 39), 0 0 10px rgb(245, 159, 39), 0 0 25px rgb(245, 159, 39); /* Effet néon */
+
+}
+
+h1 {
+    color: white;
+    font-size: 2.7em;
+    display: flex;
+    margin-top: -31%;
+    margin-left: 41%;
+
+}
+
+h2{
+    color: white;
+    font-size: 1.9em;
+    display: flex;
+    margin-top: -1%;
+    margin-left: 34%;
+
+}
+
+.connexion {
+    margin-right: 20%;
+    font-size: 1.2em;
+    margin-top: 1%;
+    
+
+}
+.login-container {
+    width: 500px;
+    padding: 30px;
+    font-size: 18px;
+    margin-left: 30%;
+    margin-top: -2%;
+    background-color: transparent;
+    
+
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    font-size: 18px;
+    color: white;
+
+}
+
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 18px;
+
+}
+
+button {
+    margin-top: 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 3%;
+
+}
+
+button:hover {
+    background-color: #0056b3;
+
+}
+
+.nouveau {
+    display: flex;
+    color: wheat;
+    margin-left: 0%;
+    margin-top: 0%;
+        
+}
+form{
+    width: 100%;
+    margin-left: 7%;
+    
+
+}
+
+h3 {
+    display: flex;
+    justify-self: center;
+    color: white;
+    margin-left: 5%;
+}
+
+a {
+    color: white;
+}
+
+a:link {
+    color: white;
+}
+
+a:visited {
+    color: white;
+}
+
+a:focus {
+    color: white;
+}
+
+a:hover {
+    color: white;
+}
+
+a:active {
+    color: white;
+}

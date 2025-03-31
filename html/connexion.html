@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/connexion.css?v=2.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <title>Connexion</title>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="header">
+        <a href="../" class="forum">Forum</a>
+        <a href="../listeTopics" class="topics">Topics Tendances</a>
+        <a href="../listeTopics" class="liste">Liste des Topics</a>
+        <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
+    </div>
+
+    <div class="box"></div>
+    <h1>Ha, te revoila !</h1>
+    <h2>Nous sommes très heureux de te revoir !</h2>
+    <h2 class="connexion">Connexion</h2>
+
+    <div class="login-container">
+        <form method="post">
+            <label for="username">Nom d'utilisateur :</label>
+            <input type="text" name="nameOrMail" id="nameOrMail" placeholder="Nom d'utilisateur ou Email">
+            <br>
+            <label for="password">Mot de passe :</label>
+            <input type="password" name="password" id="password" placeholder="Mot de passe">
+            <br>
+            <button type="submit">Se connecter</button>
+        </form>
+        <br>
+        {{.ErrConnexionMessage}}
+        <hr>
+    </div>
+
+        <form method="post" action="../connexion">
+            <input type="hidden" name="logout" value="true">
+            <button name="logoutButton" id="logout" type="submit">Se déconnecter</button>
+        </form>
+    <div>
+        <h3> Vous n'avez pas de compte? Inscrivez-vous &nbsp;<a href="../html/inscription.html"  >ici</a>&nbsp;!</h3>
+    </div>
+
+</body>
+</html>

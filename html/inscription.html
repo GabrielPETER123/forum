@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../css/inscription.css?v=2.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+        <title>Inscription</title>
+    </head>
+
+    <body>
+        <!-- HEADER -->
+        <div class="header">
+            <a href="../" class="forum">Forum</a>
+            <a href="../listeTopics" class="topics">Topics Tendances</a>
+            <a href="../listeTopics" class="liste">Liste des Topics</a>
+            <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
+        </div>
+        <h1>
+            Inscription
+        </h1>
+
+        <div>
+            <form method="post">
+                <input type="text" name="username" placeholder="Nom d'utilisateur">
+                <br>
+                <input type="email" name="email" id="email" placeholder="Email">
+                <br>
+                <input type="password" name="password" id="password" placeholder="Mot de passe">
+                <br>
+                <button type="submit">S'inscrire</button>
+            </form>
+            <br>
+            {{.ErrInscriptionMessage}}
+            <hr>
+        </div>
+
+        <div>
+            <a href="../connexion">Se connecter</a>
+        </div>
+    </body>
+</html>

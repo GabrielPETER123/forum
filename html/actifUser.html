@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../css/connexion.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+        <title>Actif User's page</title>
+    </head>
+
+    <body>
+    
+        <!-- HEADER -->
+        <div class="header">
+            <a href="../" class="forum">Forum</a>
+            <a href="../listeTopics" class="topics">Topics Tendances</a>
+            <a href="../listeTopics" class="liste">Liste des Topics</a>
+            <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
+        </div>
+    
+        <!-- TABLEAU DES UTILISATEURS -->
+        <h1>Utilisateurs les plus actifs</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom utilisateur</th>
+                    <th>Nbr Post</th>
+                    <th>Votes</th>
+                    <th>Commentaires</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Users}}
+                <tr>
+                    <td>{{.Username}}</td>
+                    <td>{{.TotalPost}}</td>
+                    <td>{{.TotalVote}}</td>
+                    <td>{{.TotalComment}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </body>
+</html>
