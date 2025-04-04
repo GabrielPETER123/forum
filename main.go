@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -22,6 +21,7 @@ type IndexDisplay struct {
   SearchUsers []golang.User
   SearchPosts []golang.Post
   SearchTopics []golang.Topic
+  User golang.User
   ErrSearchMessage string
   IsSearch bool
 }
@@ -60,13 +60,41 @@ type ActifUserDisplay struct {
   Users []golang.User
 }
 
+type AdminDisplay struct {
+  Users []golang.User
+  Posts []golang.Post
+  Topics []golang.Topic
+  Comments []golang.Comment
+  UserConnected golang.User
+
+  searchUser []golang.User
+  searchPost []golang.Post
+  searchTopic []golang.Topic
+  searchComment []golang.Comment
+
+  ErrAdminMessage string
+}
+
 //!-----------------------------------------------------------------------------------------
 
 //* Fonction qui gère la page d'accueil
 func indexHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/index.html"))
   var indexDisplay IndexDisplay
+
   if r.Method == http.MethodGet {
+    //* Récupère le cookie de l'utilisateur
+    userCookie, err := r.Cookie("UserID")
+    if err == nil {
+      userID, err := strconv.Atoi(userCookie.Value)
+      if err != nil {
+        http.Error(w, "Invalid user ID", http.StatusBadRequest)
+        return
+      }
+      indexDisplay.User = golang.GetUserByID(userID)
+    } else {
+      indexDisplay.User = golang.User{}
+    }
   }
   
   if r.Method == http.MethodPost {
@@ -718,13 +746,50 @@ func actifUser(w http.ResponseWriter, r *http.Request) {
 //* Fonction qui gère la page de l'admin
 func adminHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/admin.html"))
+  adminDisplay := AdminDisplay{}
   if r.Method == http.MethodGet {
-    tmpl.Execute(w, nil)
-  }
-  if r.Method == http.MethodPost {
-    tmpl.Execute(w, nil)
+     //* Récupère le cookie de l'utilisateur
+     userCookie, err := r.Cookie("UserID")
+     if err == nil {
+       userID, err := strconv.Atoi(userCookie.Value)
+       if err != nil {
+         http.Error(w, "Invalid user ID", http.StatusBadRequest)
+         return
+       }
+       adminDisplay.UserConnected = golang.GetUserByID(userID)
+     } else {
+       adminDisplay.UserConnected = golang.User{}
+     }
+
+    //* Récupère les utilisateurs, posts, topics et commentaires
+    adminDisplay.Users = golang.GetAllUsers()
+    adminDisplay.Posts = golang.GetAllPosts()
+    adminDisplay.Topics = golang.GetAllTopics()
+    adminDisplay.Comments = golang.GetAllComments()
   }
 
+  if r.Method == http.MethodPost {
+    err := r.ParseForm()
+    if err != nil {
+      http.Error(w, "Error parsing form.", http.StatusBadRequest)
+      return
+    }
+    searchUser := r.FormValue("searchUser")
+    searchPost := r.FormValue("searchPost")
+    searchTopic := r.FormValue("searchTopic")
+    searchComment := r.FormValue("searchComment")
+
+    if searchUser != "" {
+
+    }
+
+  }
+
+  //! Exécute le template
+  err := tmpl.Execute(w, adminDisplay)
+  if err != nil {
+    http.Error(w, "Error executing template", http.StatusInternalServerError)
+  }
 }
 
 func main() {

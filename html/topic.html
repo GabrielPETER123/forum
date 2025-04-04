@@ -105,6 +105,7 @@
             <!-- COMMENTER LE POST -->
             <div id="comment">
                 <div>
+                    <hr>
                 {{range .Comments}}
                     {{.Text}}
                     <p>Posté par {{.User.Username}} le {{.FormattedCreationDate}}</p>
@@ -116,6 +117,7 @@
                                 <input type="hidden" name="deleteCommentId" value="{{.ID}}">
                                 <button type="submit">Supprimer le commentaire</button>
                             </form>
+                        <hr>
                         {{end}}
                     </div>
                 {{end}}

@@ -8,6 +8,7 @@
         <title>Admin View Page</title>
     </head>
     <body>
+        {{if .UserConnected.Admin}}
         <!-- HEADER -->
         <div class="header">
             <a href="../" class="forum">Forum</a>
@@ -21,7 +22,75 @@
         <form method="post">
             <input type="search" name="searchUser" id="searchUser" placeholder="Nom de l'utilisateur">
             <button type="submit">Rechercher</button>
+            
+            <input type="search" name="searchPost" id="searchPost" placeholder="Nom du Post">
+            <button type="submit">Rechercher</button>
 
+            <input type="search" name="searchComment" id="searchComment" placeholder="Contenu du Commentaire">
+            <button type="submit">Rechercher</button>
 
+            <input type="search" name="searchTopic" id="searchTopic" placeholder="Nom du topic">
+            <button type="submit">Rechercher</button>
+        </form>
+        
+        <h1>Contenue du Forum</h1>
+        
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <table>
+                <thead>
+                    <th>Utilisateurs</th>
+                </thead>
+                <tbody>
+                    {{range .Users}}
+                    <tr>
+                        <td>{{.Username}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            
+            <table>
+                <thead>
+                    <th>Posts</th>
+                </thead>
+                <tbody>
+                    {{range .Posts}}
+                    <tr>
+                        <td>{{.Title}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            
+            <table>
+                <thead>
+                    <th>Topics</th>
+                </thead>
+                <tbody>
+                    {{range .Topics}}
+                    <tr>
+                        <td>{{.Name}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+
+            <table>
+                <thead>
+                    <th>Commentaires</th>
+                </thead>
+                <tbody>
+                    {{range .Comments}}
+                    <tr>
+                        <td>{{.Text}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+
+        {{else}}
+        <h1>Vous n'avez pas accès à cette page</h1>
+        {{end}}
     </body>
 </html>

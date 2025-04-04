@@ -1,5 +1,5 @@
 modification d'un topic si c'est la personne qui l'a créé ou administrateur
-suppression d'un topic, si c'est la personne qui l'a créé ou administrateur0
+suppression d'un topic, si c'est la personne qui l'a créé ou administrateur
 (page listTopics)
 
 modification des commentaires
@@ -7,6 +7,6 @@ modification des commentaires
 
 pageAdmin : Afficher les comptes des utilisateur avec barre de recherche
 
-profil : Afficher la date de création du compte, le nombre de post total, pouvoir rechercher un utilisateur à partir de sa pageUtilisateur et de la barre de recherche de la page index
+profil : pouvoir rechercher un utilisateur à partir de sa pageUtilisateur et de la barre de recherche de la page index
 
 Bonus : sécuriser les cookies pour ne pas pouvoir changer les cookies à partir du navigateur
