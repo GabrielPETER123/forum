@@ -66,12 +66,6 @@ type AdminDisplay struct {
   Topics []golang.Topic
   Comments []golang.Comment
   UserConnected golang.User
-
-  searchUser []golang.User
-  searchPost []golang.Post
-  searchTopic []golang.Topic
-  searchComment []golang.Comment
-
   ErrAdminMessage string
 }
 
@@ -762,10 +756,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
      }
 
     //* Récupère les utilisateurs, posts, topics et commentaires
-    adminDisplay.Users = golang.GetAllUsers()
-    adminDisplay.Posts = golang.GetAllPosts()
-    adminDisplay.Topics = golang.GetAllTopics()
-    adminDisplay.Comments = golang.GetAllComments()
+      adminDisplay.Users = golang.GetAllUsers()
+      adminDisplay.Posts = golang.GetAllPosts()
+      adminDisplay.Topics = golang.GetAllTopics()
+      adminDisplay.Comments = golang.GetAllComments()
   }
 
   if r.Method == http.MethodPost {
@@ -774,16 +768,106 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
       http.Error(w, "Error parsing form.", http.StatusBadRequest)
       return
     }
+
+    //* Récupère le cookie de l'utilisateur
+    userCookie, err := r.Cookie("UserID")
+    if err == nil {
+      userID, err := strconv.Atoi(userCookie.Value)
+      if err != nil {
+        http.Error(w, "Invalid user ID", http.StatusBadRequest)
+        return
+      }
+      adminDisplay.UserConnected = golang.GetUserByID(userID)
+    } else {
+      adminDisplay.UserConnected = golang.User{}
+    }
+
+    //* Données de la recherche
     searchUser := r.FormValue("searchUser")
     searchPost := r.FormValue("searchPost")
     searchTopic := r.FormValue("searchTopic")
     searchComment := r.FormValue("searchComment")
+    searchForum := r.FormValue("searchForum")
 
+    //* Recherche dans la base de données
     if searchUser != "" {
+      adminDisplay.Users = golang.SearchUsersByUsername(searchUser)
+      adminDisplay.Posts = []golang.Post{}
+      adminDisplay.Topics = []golang.Topic{}
+      adminDisplay.Comments = []golang.Comment{}
 
+      if len(adminDisplay.Users) == 0 {
+        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+      } else {
+        adminDisplay.ErrAdminMessage = ""
+      }     
+
+    }
+    
+    if searchPost != "" {
+      adminDisplay.Posts = golang.SearchPostsByTitle(searchPost)
+      adminDisplay.Users = []golang.User{}
+      adminDisplay.Topics = []golang.Topic{}
+      adminDisplay.Comments = []golang.Comment{}
+      
+      if len(adminDisplay.Posts) == 0 {
+        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+      } else {
+        adminDisplay.ErrAdminMessage = ""
+      }
+      
+    }
+    
+    if searchTopic != "" {
+      adminDisplay.Topics = golang.SearchTopicsByName(searchTopic)
+      adminDisplay.Users = []golang.User{}
+      adminDisplay.Posts = []golang.Post{}
+      adminDisplay.Comments = []golang.Comment{}
+      
+      if len(adminDisplay.Topics) == 0 {
+        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+      } else {
+        adminDisplay.ErrAdminMessage = ""
+      }
+      
+      http.Redirect(w, r, "/admin", http.StatusSeeOther)
+      return
+    }
+    
+    if searchComment != "" {
+      adminDisplay.Comments = golang.SearchCommentsByText(searchComment)
+      adminDisplay.Users = []golang.User{}
+      adminDisplay.Posts = []golang.Post{}
+      adminDisplay.Topics = []golang.Topic{}
+
+      if len(adminDisplay.Comments) == 0 {
+        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+      } else {
+        adminDisplay.ErrAdminMessage = ""
+      }
+      fmt.Println("AdminDisplay.Comments:", adminDisplay.Comments) //! DEBUG
+      
+      http.Redirect(w, r, "/admin", http.StatusSeeOther)
+      return
+    }
+
+    if searchForum != "" {
+      adminDisplay.Users = golang.SearchUsersByUsername(searchForum)
+      adminDisplay.Posts = golang.SearchPostsByTitle(searchForum)
+      adminDisplay.Topics = golang.SearchTopicsByName(searchForum)
+      adminDisplay.Comments = golang.SearchCommentsByText(searchForum)
+
+      if len(adminDisplay.Users) == 0 && len(adminDisplay.Posts) == 0 && len(adminDisplay.Topics) == 0 && len(adminDisplay.Comments) == 0 {
+        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+      } else {
+        adminDisplay.ErrAdminMessage = ""
+      }
     }
 
   }
+
+  fmt.Println("AdminDisplay:", adminDisplay) //! DEBUG
+  fmt.Println("AdminDisplay.Users:", adminDisplay.Topics) //! DEBUG
 
   //! Exécute le template
   err := tmpl.Execute(w, adminDisplay)
