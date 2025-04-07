@@ -236,7 +236,6 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
     if !matchUsername {
       errInscription += "Nom incorrect."
       fmt.Println(errInscription)
-      return
     }
     
     //* Vérifie si le mail possède un format correct
@@ -247,7 +246,7 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
     }
     
     //* Vérifie si le mot de passe possède un format correct
-    matchedPassword, _ := regexp.MatchString(`^[a-zA-Z0-9.?_%+-]{8,}$`, password)
+    matchedPassword, _ := regexp.MatchString(`^[a-zA-Z0-9.?!_%+-]{8,}$`, password)
     if !matchedPassword {
       errInscription = "Mot de passe incorrect."
       fmt.Println(errInscription)

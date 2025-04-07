@@ -65,6 +65,7 @@ func GetAllPosts() []Post {
         posts[i].FormattedCreationDate = posts[i].CreatedAt.Format("02 January 2006 15:04")
         posts[i].FormattedUpdatedDate = posts[i].UpdatedAt.Format("02 January 2006 15:04")
     }
+
 	for i := range posts {
 		posts[i].TotalUp, posts[i].TotalDown = Totals(posts[i].ID)
 	}
@@ -99,4 +100,3 @@ func GetPostsByTopicID(topicID int) []Post {
 	
 	return posts
 }
-
