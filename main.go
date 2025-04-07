@@ -790,84 +790,108 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
     searchForum := r.FormValue("searchForum")
 
     //* Recherche dans la base de données
+
+    //! varibale pour savoir si l'utilisateur a fait plusieurs recherches
+    searchUserBool := 0
+    searchPostBool := 0
+    searchTopicBool := 0
+    searchCommentBool := 0
+    searchForumBool := 0
+
     if searchUser != "" {
-      adminDisplay.Users = golang.SearchUsersByUsername(searchUser)
-      adminDisplay.Posts = []golang.Post{}
-      adminDisplay.Topics = []golang.Topic{}
-      adminDisplay.Comments = []golang.Comment{}
-
-      if len(adminDisplay.Users) == 0 {
-        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
-      } else {
-        adminDisplay.ErrAdminMessage = ""
-      }     
-
+      searchUserBool = 1
     }
-    
     if searchPost != "" {
-      adminDisplay.Posts = golang.SearchPostsByTitle(searchPost)
-      adminDisplay.Users = []golang.User{}
-      adminDisplay.Topics = []golang.Topic{}
-      adminDisplay.Comments = []golang.Comment{}
-      
-      if len(adminDisplay.Posts) == 0 {
-        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
-      } else {
-        adminDisplay.ErrAdminMessage = ""
-      }
-      
+      searchPostBool = 1
     }
-    
     if searchTopic != "" {
-      adminDisplay.Topics = golang.SearchTopicsByName(searchTopic)
-      adminDisplay.Users = []golang.User{}
-      adminDisplay.Posts = []golang.Post{}
-      adminDisplay.Comments = []golang.Comment{}
-      
-      if len(adminDisplay.Topics) == 0 {
-        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
-      } else {
-        adminDisplay.ErrAdminMessage = ""
-      }
-      
-      http.Redirect(w, r, "/admin", http.StatusSeeOther)
-      return
+      searchTopicBool = 1
     }
-    
     if searchComment != "" {
-      adminDisplay.Comments = golang.SearchCommentsByText(searchComment)
-      adminDisplay.Users = []golang.User{}
-      adminDisplay.Posts = []golang.Post{}
-      adminDisplay.Topics = []golang.Topic{}
-
-      if len(adminDisplay.Comments) == 0 {
-        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
-      } else {
-        adminDisplay.ErrAdminMessage = ""
-      }
-      fmt.Println("AdminDisplay.Comments:", adminDisplay.Comments) //! DEBUG
-      
-      http.Redirect(w, r, "/admin", http.StatusSeeOther)
-      return
+      searchCommentBool = 1
     }
-
     if searchForum != "" {
-      adminDisplay.Users = golang.SearchUsersByUsername(searchForum)
-      adminDisplay.Posts = golang.SearchPostsByTitle(searchForum)
-      adminDisplay.Topics = golang.SearchTopicsByName(searchForum)
-      adminDisplay.Comments = golang.SearchCommentsByText(searchForum)
-
-      if len(adminDisplay.Users) == 0 && len(adminDisplay.Posts) == 0 && len(adminDisplay.Topics) == 0 && len(adminDisplay.Comments) == 0 {
-        adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
-      } else {
-        adminDisplay.ErrAdminMessage = ""
-      }
+      searchForumBool = 1
     }
 
-  }
+    if searchUserBool + searchPostBool + searchTopicBool + searchCommentBool + searchForumBool > 1 {
+      adminDisplay.ErrAdminMessage = "Vous ne pouvez pas faire plusieurs recherches en même temps."
+      adminDisplay.Users = golang.GetAllUsers()
+      adminDisplay.Posts = golang.GetAllPosts()
+      adminDisplay.Topics = golang.GetAllTopics()
+      adminDisplay.Comments = golang.GetAllComments()
+    } else {
+      //* Recherche les utilisateurs
+      if searchUser != "" {
+        adminDisplay.Users = golang.SearchUsersByUsername(searchUser)
+        adminDisplay.Posts = []golang.Post{}
+        adminDisplay.Topics = []golang.Topic{}
+        adminDisplay.Comments = []golang.Comment{}
 
-  fmt.Println("AdminDisplay:", adminDisplay) //! DEBUG
-  fmt.Println("AdminDisplay.Users:", adminDisplay.Topics) //! DEBUG
+        if len(adminDisplay.Users) == 0 {
+          adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+        } else {
+          adminDisplay.ErrAdminMessage = ""
+        }     
+      }
+      
+      //* Recherche les posts
+      if searchPost != "" {
+        adminDisplay.Posts = golang.SearchPostsByTitle(searchPost)
+        adminDisplay.Users = []golang.User{}
+        adminDisplay.Topics = []golang.Topic{}
+        adminDisplay.Comments = []golang.Comment{}
+        
+        if len(adminDisplay.Posts) == 0 {
+          adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+        } else {
+          adminDisplay.ErrAdminMessage = ""
+        }
+      }
+      
+      //* Recherche les topics
+      if searchTopic != "" {
+        adminDisplay.Topics = golang.SearchTopicsByName(searchTopic)
+        adminDisplay.Users = []golang.User{}
+        adminDisplay.Posts = []golang.Post{}
+        adminDisplay.Comments = []golang.Comment{}
+        
+        if len(adminDisplay.Topics) == 0 {
+          adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+        } else {
+          adminDisplay.ErrAdminMessage = ""
+        }
+      }
+      
+      //* Recherche les commentaires
+      if searchComment != "" {
+        adminDisplay.Comments = golang.SearchCommentsByText(searchComment)
+        adminDisplay.Users = []golang.User{}
+        adminDisplay.Posts = []golang.Post{}
+        adminDisplay.Topics = []golang.Topic{}
+
+        if len(adminDisplay.Comments) == 0 {
+          adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+        } else {
+          adminDisplay.ErrAdminMessage = ""
+        }
+      }
+
+      //* Recherche dans le forum
+      if searchForum != "" {
+        adminDisplay.Users = golang.SearchUsersByUsername(searchForum)
+        adminDisplay.Posts = golang.SearchPostsByTitle(searchForum)
+        adminDisplay.Topics = golang.SearchTopicsByName(searchForum)
+        adminDisplay.Comments = golang.SearchCommentsByText(searchForum)
+
+        if len(adminDisplay.Users) == 0 && len(adminDisplay.Posts) == 0 && len(adminDisplay.Topics) == 0 && len(adminDisplay.Comments) == 0 {
+          adminDisplay.ErrAdminMessage = "Aucun résultat trouvé."
+        } else {
+          adminDisplay.ErrAdminMessage = ""
+        }
+      }
+    }
+  }
 
   //! Exécute le template
   err := tmpl.Execute(w, adminDisplay)

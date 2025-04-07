@@ -64,13 +64,13 @@
                 <tbody>
                     {{range .Posts}}
                     <tr>
-                        <td>{{.Title}}</td>
+                        <td><a href="/post?postId={{.ID}}">{{.Title}}</a></td>
                     </tr>
                     {{end}}
                 </tbody>
             </table>
             {{end}}
-            
+                
             {{if .Topics}}
             <table>
                 <thead>
@@ -79,7 +79,7 @@
                 <tbody>
                     {{range .Topics}}
                     <tr>
-                        <td>{{.Name}}</td>
+                        <td><a href="/topic?topicId={{.ID}}">{{.Name}}</a></td>
                     </tr>
                     {{end}}
                 </tbody>
