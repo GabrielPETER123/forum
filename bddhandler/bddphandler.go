@@ -165,7 +165,7 @@ func DeletePost(db *sql.DB, postID, userID int) error {
         return fmt.Errorf("failed to delete post: %v", err)
     }
 
-    affected, err := result.RowsAffected() // **Vérifie le nombre de lignes affectées.
+    affected, err := result.RowsAffected()
     if err != nil {
         tx.Rollback()
         return fmt.Errorf("failed to get affected rows: %v", err)
@@ -173,10 +173,10 @@ func DeletePost(db *sql.DB, postID, userID int) error {
 
     if affected == 0 {
         tx.Rollback()
-        return fmt.Errorf("post not found or user not authorized") // **Aucun post supprimé (inexistant ou mauvaise autorisation).
+        return fmt.Errorf("post not found or user not authorized")
     }
 
-    return tx.Commit() // **Commit la transaction.
+    return tx.Commit()
 }
 
 // **CloseDB ferme la connexion à la base de données.
@@ -234,7 +234,7 @@ func ExportDataToFile(db *sql.DB, filename string) error {
     }
     defer rows.Close()
 
-    file.WriteString("\nComments:\n")
+    file.WriteString("\nComments:\n") 
     for rows.Next() {
         var comment struct {
             ID        int
