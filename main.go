@@ -250,10 +250,10 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
       userSend.Username = username
       userSend.Email = email
 
-      //* Hash the password
+      //* Hash le password
       hashedPassword := hashedPassword(password)
       userSend.Password = string(hashedPassword)
-
+      //* Hash l' ID
       userId := len(golang.GetAllUsers()) + 1
       userSend.Id = hashedUserId(userId)
 
