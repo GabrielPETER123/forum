@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -80,12 +81,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
     //* Récupère le cookie de l'utilisateur
     userCookie, err := r.Cookie("UserID")
     if err == nil {
-      userID, err := strconv.Atoi(userCookie.Value)
-      if err != nil {
-        http.Error(w, "Invalid user ID", http.StatusBadRequest)
-        return
-      }
-      indexDisplay.User = golang.GetUserByID(userID)
+      indexDisplay.User = golang.GetUserByID(userCookie.Value)
     } else {
       indexDisplay.User = golang.User{}
     }
@@ -114,7 +110,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
         if len(searchUsers) > 0 {
           for i := range searchUsers {
             //* Fait le total des posts de l'utilisateur
-            posts := golang.GetPostsByUserID(int(searchUsers[i].ID))
+            posts := golang.GetPostsByUserID(searchUsers[i].Id)
             if len(posts) > 0 {
               searchUsers[i].TotalPost = uint(len(posts))
             } else {
@@ -194,11 +190,7 @@ func connexionHandler(w http.ResponseWriter, r *http.Request) {
     user, valid := golang.CheckUserPassword(nameOrMail, password)
     if valid {
       //* Crée un cookie pour l'utilisateur
-      userCookie := http.Cookie{
-        Name:  "UserID",
-        Value: strconv.Itoa(int(user.ID)),
-        Path:  "/",
-      }
+      userCookie := createCookie(user.Id)
       http.SetCookie(w, &userCookie)
       http.Redirect(w, r, "/", http.StatusSeeOther)
       return
@@ -259,12 +251,11 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
       userSend.Email = email
 
       //* Hash the password
-      hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-      if err != nil {
-        http.Error(w, "Error hashing password.", http.StatusInternalServerError)
-        return
-      }
+      hashedPassword := hashedPassword(password)
       userSend.Password = string(hashedPassword)
+
+      userId := len(golang.GetAllUsers()) + 1
+      userSend.Id = hashedUserId(userId)
 
       //* Écris dans la base de données le User
       fmt.Println("Starting AddUserInDataBase...")
@@ -288,14 +279,12 @@ func profilHandler(w http.ResponseWriter, r *http.Request) {
     //* Récupère l'ID de l'utilisateur des cookies
     userCookie, err := r.Cookie("UserID")
     if err == nil {
-      userID, _ := strconv.Atoi(userCookie.Value)
-      // fmt.Println("User ID:", userID)
   
       //* Récupère les posts de l'utilisateur
-      posts := golang.GetPostsByUserID(userID)
+      posts := golang.GetPostsByUserID(userCookie.Value)
       profilDisplay = ProfilDisplay{Posts: posts}
 
-      user := golang.GetUserByID(userID)
+      user := golang.GetUserByID(userCookie.Value)
       if user.Username == "" {
         profilDisplay.User = golang.User{}
       } else {
@@ -401,15 +390,7 @@ func listTopicsHandler(w http.ResponseWriter, r *http.Request) {
         tmpl.Execute(w, topicsDisplay)
         return
       }
-      userID, err := strconv.Atoi(userCookie.Value)
-      if err != nil {
-        topicsDisplay.ErrListTopicMessage = "Connectez vous pour créer un topic !"
-        //* Récupère les topics ARRETE DE l'OUBLIER
-        topicsDisplay.Topics = golang.GetAllTopics()
-        tmpl.Execute(w, topicsDisplay)
-        return
-      }
-      user := golang.GetUserByID(userID)
+      user := golang.GetUserByID(userCookie.Value)
 
       //* Vérifie si l'utilisateur est connecté
       if user.Username == "" {
@@ -472,22 +453,17 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       topicDisplay.ErrTopicMessage = "Connectez vous pour poster (PAS CONNECTÉ)!"
       for i := range topicDisplay.Posts {
       topicDisplay.Posts[i].IsLoggedIn = false
-      topicDisplay.Posts[i].UserConnectedID = 0
+      topicDisplay.Posts[i].UserConnectedID = ""
       }
     } else {
-      userID, err := strconv.Atoi(userCookie.Value)
-      if err != nil {
-        http.Error(w, "Invalid user ID", http.StatusBadRequest)
-        return
-      }
-      topicDisplay.User = golang.GetUserByID(userID)
+      topicDisplay.User = golang.GetUserByID(userCookie.Value)
 
       //* Sert à afficher les boutons
       for i := range topicDisplay.Posts {
         topicDisplay.Posts[i].IsLoggedIn = true
-        topicDisplay.Posts[i].UserConnectedID = uint(userID)
+        topicDisplay.Posts[i].UserConnectedID = userCookie.Value
         for j := range topicDisplay.Posts[i].Comments {
-          topicDisplay.Posts[i].Comments[j].UserConnectedID = uint(userID)
+          topicDisplay.Posts[i].Comments[j].UserConnectedID = userCookie.Value
           topicDisplay.Posts[i].Comments[j].IsLoggedIn = true
         }
       }
@@ -551,25 +527,20 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
       //* Fait en sorte que les boutons ne s'affichent pas
       for i := range topicDisplay.Posts {
         topicDisplay.Posts[i].IsLoggedIn = false
-        topicDisplay.Posts[i].UserConnectedID = 0
+        topicDisplay.Posts[i].UserConnectedID = ""
       }
 
     } else {
     
       //* Création de l'ID de l'utilisateur
-      userID, err := strconv.Atoi(userCookie.Value)
-      if err != nil {
-        http.Error(w, "Invalid user ID", http.StatusBadRequest)
-        return
-      }
-      topicDisplay.User = golang.GetUserByID(userID)
+      topicDisplay.User = golang.GetUserByID(userCookie.Value)
 
       //* Sert à afficher les boutons
       for i := range topicDisplay.Posts {
         topicDisplay.Posts[i].IsLoggedIn = true
-        topicDisplay.Posts[i].UserConnectedID = uint(userID)
+        topicDisplay.Posts[i].UserConnectedID = userCookie.Value
         for j := range topicDisplay.Posts[i].Comments {
-          topicDisplay.Posts[i].Comments[j].UserConnectedID = uint(userID)
+          topicDisplay.Posts[i].Comments[j].UserConnectedID = userCookie.Value
           topicDisplay.Posts[i].Comments[j].IsLoggedIn = true
         }
       }
@@ -582,7 +553,7 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
         postSend.TopicID = uint(topicID)
         postSend.Title = title
         postSend.Text = content
-        postSend.UserID = uint(userID)
+        postSend.UserID = userCookie.Value
 
         golang.AddPostInDataBase(postSend)
         http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
@@ -598,15 +569,8 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
           http.Error(w, "Invalid post ID", http.StatusBadRequest)
           return
         }
-        //* Récupère l'ID de l'utilisateur des cookies
-        userID, err := strconv.Atoi(userCookie.Value)
-        if err != nil {
-          fmt.Println("Error getting user ID")
-          http.Error(w, "Invalid user ID", http.StatusBadRequest)
-          return
-        }
         //* Ajoute le vote dans la base de données
-        golang.Votes(uint(postId), uint(userID), vote)
+        golang.Votes(uint(postId), userCookie.Value, vote)
 
         //* Redirige l'utilisateur après avoir traité le vote
         http.Redirect(w, r, "/topic?topicId="+topicIDStr, http.StatusSeeOther)
@@ -665,7 +629,7 @@ func topicHandler(w http.ResponseWriter, r *http.Request) {
         var commentSend = golang.Comment{}
         commentSend.PostID = uint(commentPostID)
         commentSend.Text = commentContent
-        commentSend.UserID = uint(userID)
+        commentSend.UserID = userCookie.Value
 
         golang.AddComment(commentSend)
 
@@ -706,7 +670,7 @@ func actifUser(w http.ResponseWriter, r *http.Request) {
     users := ActifUserDisplay{Users: golang.GetAllUsers()}
     for i := range users.Users {
       //* Fait le total des posts de l'utilisateur
-      posts := golang.GetPostsByUserID(int(users.Users[i].ID))
+      posts := golang.GetPostsByUserID(users.Users[i].Id)
       if len(posts) > 0 {
         users.Users[i].TotalPost = uint(len(posts))
       } else {
@@ -744,12 +708,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
      //* Récupère le cookie de l'utilisateur
      userCookie, err := r.Cookie("UserID")
      if err == nil {
-       userID, err := strconv.Atoi(userCookie.Value)
-       if err != nil {
-         http.Error(w, "Invalid user ID", http.StatusBadRequest)
-         return
-       }
-       adminDisplay.UserConnected = golang.GetUserByID(userID)
+       adminDisplay.UserConnected = golang.GetUserByID(userCookie.Value)
      } else {
        adminDisplay.UserConnected = golang.User{}
      }
@@ -771,12 +730,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
     //* Récupère le cookie de l'utilisateur
     userCookie, err := r.Cookie("UserID")
     if err == nil {
-      userID, err := strconv.Atoi(userCookie.Value)
-      if err != nil {
-        http.Error(w, "Invalid user ID", http.StatusBadRequest)
-        return
-      }
-      adminDisplay.UserConnected = golang.GetUserByID(userID)
+      adminDisplay.UserConnected = golang.GetUserByID(userCookie.Value)
     } else {
       adminDisplay.UserConnected = golang.User{}
     }
@@ -916,4 +870,30 @@ func main() {
   http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
 	fmt.Println("http://localhost:8080/")
 	http.ListenAndServe(":8080", nil)
+}
+
+func hashedPassword(password string) string{
+  hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+  if err != nil {
+    fmt.Println("Error hashing password:", err)
+    return ""
+  }
+  return string(hashedPassword)
+}
+
+func hashedUserId(id int) string{
+  hashedId, err := bcrypt.GenerateFromPassword([]byte(strconv.Itoa(id)), bcrypt.DefaultCost)
+  if err != nil {
+    fmt.Println("Error hashing ID:", err)
+    return ""
+  }
+  return string(hashedId)
+}
+
+func createCookie(userId string) http.Cookie {
+  return http.Cookie{
+    Name:  "UserID",
+    Value: userId,
+    Path:  "/",
+  }
 }

@@ -4,7 +4,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//* création de l'utilisateur admin
+// * création de l'utilisateur admin
 func CreateAdminUser() {
 	if CheckUser("admin") {
 		return
@@ -15,10 +15,11 @@ func CreateAdminUser() {
 		panic(err)
 	}
 	user := User{
-	Username: "admin",
-	Password: string(hashedPassword),
-	Email: "",
-	Admin: true,
+		Id:       "admin",
+		Username: "admin",
+		Password: string(hashedPassword),
+		Email:    "",
+		Admin:    true,
 	}
-    AddUserInDataBase(user)
+	AddUserInDataBase(user)
 }

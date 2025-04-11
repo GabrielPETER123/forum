@@ -7,7 +7,7 @@ import (
 )
 
 //* Gestion du vote
-func Votes(postID uint, userID uint, vote string) {
+func Votes(postID uint, userID string, vote string) {
 	// fmt.Println("Opening database connection...")
 	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
 	if err != nil {
