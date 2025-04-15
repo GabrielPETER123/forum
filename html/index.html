@@ -14,7 +14,7 @@
             <a href="../listTopics" class="liste">Liste des Topics</a>
             <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
             {{if .Connected}}
-            <a href="../profil?userId={{.UserId}}">Profil Utilisateur</a>
+            <a href="../profil?username={{.Username}}">Profil Utilisateur</a>
             {{end}}
             {{if .User.Admin}}
             <a href="../admin" class="admin"><h2><i class="fa-solid fa-user-shield"></i></h2></a>
@@ -34,12 +34,14 @@
 
         </div>
 
+        <!-- Recherche -->
+        {{.ErrSearchMessage}}
         <div class="result">
             {{if .IsSearch}}
             <h2>Résultats de la recherche :</h2>
             <div class="resultUsers">
                 {{range .SearchUsers}}
-                    <a href="../profil?userId={{.User.Id}}">{{.Username}}</a>
+                    <a href="../profil?username={{.Username}}">{{.Username}}</a>
                 {{end}}
             </div>
 
@@ -55,6 +57,7 @@
                 {{end}}
             </div>
             {{end}}
+           
         </div>
 
     </body>

@@ -24,7 +24,7 @@ type IndexDisplay struct {
   SearchTopics []golang.Topic
   User golang.User
   Connected bool
-  UserId string
+  Username string
   ErrSearchMessage string
   IsSearch bool
 }
@@ -80,7 +80,7 @@ type AdminDisplay struct {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/index.html"))
   var indexDisplay IndexDisplay
-  var userId string
+  var username string
 
   if r.Method == http.MethodGet {
     //* Récupère le cookie de l'utilisateur
@@ -91,17 +91,28 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
     } else {
       indexDisplay.Connected = true
       indexDisplay.User = golang.GetUserByID(userCookie.Value)
-      userId = userCookie.Value
-      indexDisplay.UserId = userId
+      username = golang.GetUserByID(userCookie.Value).Username
+      indexDisplay.Username = username
     }
   }
   
   if r.Method == http.MethodPost {
-    indexDisplay.IsSearch = false
     err := r.ParseForm()
     if err != nil {
       http.Error(w, "Error parsing form.", http.StatusBadRequest)
       return
+    }
+
+    //* Récupère le cookie de l'utilisateur
+    userCookie, err := r.Cookie("UserID")
+    if err != nil {
+      indexDisplay.Connected = false
+      indexDisplay.User = golang.User{}
+    } else {
+      indexDisplay.Connected = true
+      indexDisplay.User = golang.GetUserByID(userCookie.Value)
+      username = golang.GetUserByID(userCookie.Value).Username
+      indexDisplay.Username = username
     }
     
     //* Info de la recherche
@@ -111,7 +122,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
     if search != "" {
       //* Récupère les utilisateurs, posts et topics correspondant à la recherche
       searchUsers, searchPosts, searchTopics := golang.SearchUserPostTopic(search)
-      
+
       if len(searchUsers) == 0 && len(searchPosts) == 0 && len(searchTopics) == 0 {
         indexDisplay.ErrSearchMessage = "Aucun résultat trouvé."
         indexDisplay.IsSearch = false
@@ -140,13 +151,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
           }
         }
         //* Met dans la template les utilisateurs, posts et topics trouvés
-        indexDisplay = IndexDisplay{
-          SearchUsers: searchUsers,
-          SearchPosts: searchPosts,
-          SearchTopics: searchTopics,
-          IsSearch: true,
-          ErrSearchMessage: "",
-        }
+        indexDisplay.SearchUsers = searchUsers
+        indexDisplay.SearchPosts = searchPosts
+        indexDisplay.SearchTopics = searchTopics
+        indexDisplay.IsSearch = true
+        indexDisplay.ErrSearchMessage = ""
       }
     }
   }
@@ -281,11 +290,11 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
 func profilHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/profil.html"))
   profilDisplay := ProfilDisplay{}
-  var userId string
+  var username string
 
   if r.Method == http.MethodGet {
     //* Récupère l'ID de l'utilisateur recherché dans l'URL
-    userId = r.URL.Query().Get("userId")
+    username = r.URL.Query().Get("username")
 
     //* Récupère l'ID de l'utilisateur des cookies
     userCookie, err := r.Cookie("UserID")
@@ -295,25 +304,25 @@ func profilHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     find := false
-    if golang.GetUserByID(userId).Id != "" {
+    if golang.GetUserByUsername(username).Username != "" {
       find = true
     }
     //* Vérifie si la query est vide
-    if userId != "" && find {
+    if username != "" && find {
 
       profilDisplay.Found = true
 
       //* Récupère les posts de l'utilisateur
-      posts := golang.GetPostsByUserID(userId)
+      posts := golang.GetPostsByUserID(golang.GetUserByUsername(username).Id)
       profilDisplay.Posts = posts
-      user := golang.GetUserByID(userId)
+      user := golang.GetUserByID(golang.GetUserByUsername(username).Id)
 
       if user.Username == "" {
         profilDisplay.User = golang.User{}
       } else {
 
         //* Vérifie si l'utilisateur sur la page est le même que celui recherché
-        if userId == userCookie.Value {
+        if golang.GetUserByUsername(username).Id == userCookie.Value {
           for i := range profilDisplay.Posts {
             profilDisplay.Posts[i].IsLoggedIn = true
           }
@@ -352,7 +361,7 @@ func profilHandler(w http.ResponseWriter, r *http.Request) {
     // fmt.Println("Delete post ID:", deletePostID)
     golang.DeletePost(deletePostID)
     
-    http.Redirect(w, r, "/profil?userId="+userId , http.StatusSeeOther)
+    http.Redirect(w, r, "/profil?username="+username , http.StatusSeeOther)
   }
 
   //! Exécute le template
@@ -759,6 +768,8 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
       adminDisplay.Posts = golang.GetAllPosts()
       adminDisplay.Topics = golang.GetAllTopics()
       adminDisplay.Comments = golang.GetAllComments()
+
+      fmt.Println("adminDisplay.Users: ", adminDisplay.Users)
   }
 
   if r.Method == http.MethodPost {
