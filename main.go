@@ -23,6 +23,8 @@ type IndexDisplay struct {
   SearchPosts []golang.Post
   SearchTopics []golang.Topic
   User golang.User
+  Connected bool
+  UserId string
   ErrSearchMessage string
   IsSearch bool
 }
@@ -38,6 +40,8 @@ type InscriptionDisplay struct {
 type ProfilDisplay struct {
   Posts []golang.Post
   User golang.User
+  Found bool
+  ErrProfilMessage string
 }
 
 type PostDisplay struct {
@@ -76,14 +80,19 @@ type AdminDisplay struct {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/index.html"))
   var indexDisplay IndexDisplay
+  var userId string
 
   if r.Method == http.MethodGet {
     //* Récupère le cookie de l'utilisateur
     userCookie, err := r.Cookie("UserID")
-    if err == nil {
-      indexDisplay.User = golang.GetUserByID(userCookie.Value)
-    } else {
+    if err != nil {
+      indexDisplay.Connected = false
       indexDisplay.User = golang.User{}
+    } else {
+      indexDisplay.Connected = true
+      indexDisplay.User = golang.GetUserByID(userCookie.Value)
+      userId = userCookie.Value
+      indexDisplay.UserId = userId
     }
   }
   
@@ -105,6 +114,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
       
       if len(searchUsers) == 0 && len(searchPosts) == 0 && len(searchTopics) == 0 {
         indexDisplay.ErrSearchMessage = "Aucun résultat trouvé."
+        indexDisplay.IsSearch = false
         
       } else {
         if len(searchUsers) > 0 {
@@ -118,7 +128,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
             }
 
             //* Fait le total des commentaires de l'utilisateur
-            comments := golang.GetCommentsByUserID(int(searchUsers[i].ID))
+            comments := golang.GetCommentsByUserID(searchUsers[i].Id)
             if len(comments) > 0 {
               searchUsers[i].TotalComment = uint(len(comments))
             } else {
@@ -126,7 +136,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
             }
       
             //* Fait le total des votes de l'utilisateur
-            searchUsers[i].TotalVote = golang.TotalVotes(searchUsers[i].ID)
+            searchUsers[i].TotalVote = golang.TotalVotes(searchUsers[i].Id)
           }
         }
         //* Met dans la template les utilisateurs, posts et topics trouvés
@@ -140,7 +150,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
       }
     }
   }
-  
   //! Exécute le template
   tmpl.Execute(w, indexDisplay)
 }
@@ -149,9 +158,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func connexionHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/connexion.html"))
   if r.Method == http.MethodGet {
-    tmpl.Execute(w, connexionDisplay)
-    return
   }
+
   if r.Method == http.MethodPost {
     err := r.ParseForm()
     if err != nil {
@@ -161,7 +169,6 @@ func connexionHandler(w http.ResponseWriter, r *http.Request) {
 
     //* Vérifie si l'utilisateur veut se déconnecter
     logout := r.FormValue("logout")
-    fmt.Println("Logout:", logout)
     if logout == "true" {
       //* Vide le cookie de l'utilisateur
       userCookie := http.Cookie{
@@ -181,7 +188,7 @@ func connexionHandler(w http.ResponseWriter, r *http.Request) {
     //! Erreur si le nom, le mail ou le mot de passe est vide
     if nameOrMail == "" || password == "" {
       errConnexion = "Nom, Email ou Mot de passe vide.\n"
-      connexionDisplay.ErrConnexionMessage += errConnexion
+      connexionDisplay.ErrConnexionMessage = errConnexion
       tmpl.Execute(w, connexionDisplay)
       return
     }
@@ -197,7 +204,7 @@ func connexionHandler(w http.ResponseWriter, r *http.Request) {
     } else {
       errConnexion = "Nom ou Email incorrect.\n"
 
-      connexionDisplay.ErrConnexionMessage += errConnexion
+      connexionDisplay.ErrConnexionMessage = errConnexion
       http.Redirect(w, r, "/connexion", http.StatusSeeOther)
       return
     }
@@ -273,33 +280,65 @@ func inscriptionHandler(w http.ResponseWriter, r *http.Request) {
 //* Fonction qui gère la page de l'utilisateur
 func profilHandler(w http.ResponseWriter, r *http.Request) {
   tmpl := template.Must(template.ParseFiles("html/profil.html"))
-  var profilDisplay ProfilDisplay
+  profilDisplay := ProfilDisplay{}
+  var userId string
 
   if r.Method == http.MethodGet {
+    //* Récupère l'ID de l'utilisateur recherché dans l'URL
+    userId = r.URL.Query().Get("userId")
+
     //* Récupère l'ID de l'utilisateur des cookies
     userCookie, err := r.Cookie("UserID")
-    if err == nil {
-  
-      //* Récupère les posts de l'utilisateur
-      posts := golang.GetPostsByUserID(userCookie.Value)
-      profilDisplay = ProfilDisplay{Posts: posts}
+    if err != nil {
+      userCookie = &http.Cookie{}
+      userCookie.Value = ""
+    }
 
-      user := golang.GetUserByID(userCookie.Value)
+    find := false
+    if golang.GetUserByID(userId).Id != "" {
+      find = true
+    }
+    //* Vérifie si la query est vide
+    if userId != "" && find {
+
+      profilDisplay.Found = true
+
+      //* Récupère les posts de l'utilisateur
+      posts := golang.GetPostsByUserID(userId)
+      profilDisplay.Posts = posts
+      user := golang.GetUserByID(userId)
+
       if user.Username == "" {
         profilDisplay.User = golang.User{}
       } else {
-        profilDisplay.User = user
+
+        //* Vérifie si l'utilisateur sur la page est le même que celui recherché
+        if userId == userCookie.Value {
+          for i := range profilDisplay.Posts {
+            profilDisplay.Posts[i].IsLoggedIn = true
+          }
+        } else {
+          for i := range profilDisplay.Posts {
+            profilDisplay.Posts[i].IsLoggedIn = false
+          }
+        }
+
         if len(posts) > 0 {
           user.TotalPost = uint(len(posts))
         } else {
           user.TotalPost = 0
         }
         //* Fait le total des votes de l'utilisateur
-        user.TotalVote = golang.TotalVotes(user.ID)
+        user.TotalVote = golang.TotalVotes(user.Id)
       }
       profilDisplay.User = user
+
+    } else {
+      profilDisplay.User = golang.User{}
+      profilDisplay.Posts = []golang.Post{}
+      profilDisplay.Found = false
+      profilDisplay.ErrProfilMessage = "Aucun utilisateur trouvé"
     }
-    tmpl.Execute(w, profilDisplay)
   }
 
   if r.Method == http.MethodPost {
@@ -313,9 +352,11 @@ func profilHandler(w http.ResponseWriter, r *http.Request) {
     // fmt.Println("Delete post ID:", deletePostID)
     golang.DeletePost(deletePostID)
     
-    http.Redirect(w, r, "/profil", http.StatusSeeOther)
-    tmpl.Execute(w, profilDisplay)
+    http.Redirect(w, r, "/profil?userId="+userId , http.StatusSeeOther)
   }
+
+  //! Exécute le template
+  tmpl.Execute(w, profilDisplay)
 }
 
 //* Fonction qui gère la page d'un post
@@ -677,7 +718,7 @@ func actifUser(w http.ResponseWriter, r *http.Request) {
         users.Users[i].TotalPost = 0
       }
       //* Fait le total des commentaires de l'utilisateur
-      comments := golang.GetCommentsByUserID(int(users.Users[i].ID))
+      comments := golang.GetCommentsByUserID(users.Users[i].Id)
       if len(comments) > 0 {
         users.Users[i].TotalComment = uint(len(comments))
       } else {
@@ -685,7 +726,7 @@ func actifUser(w http.ResponseWriter, r *http.Request) {
       }
       
       //* Fait le total des votes de l'utilisateur
-      users.Users[i].TotalVote = golang.TotalVotes(users.Users[i].ID)
+      users.Users[i].TotalVote = golang.TotalVotes(users.Users[i].Id)
     }
     err := tmp.Execute(w, users)
     if err != nil {
@@ -845,12 +886,8 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
       }
     }
   }
-
   //! Exécute le template
-  err := tmpl.Execute(w, adminDisplay)
-  if err != nil {
-    http.Error(w, "Error executing template", http.StatusInternalServerError)
-  }
+  tmpl.Execute(w, adminDisplay)
 }
 
 func main() {

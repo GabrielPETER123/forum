@@ -13,7 +13,9 @@
             <a href="../tendances" class="topics">Topics Tendances</a>
             <a href="../listTopics" class="liste">Liste des Topics</a>
             <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
-            <a href="../profil">Profil Utilisateur</a>
+            {{if .Connected}}
+            <a href="../profil?userId={{.UserId}}">Profil Utilisateur</a>
+            {{end}}
             {{if .User.Admin}}
             <a href="../admin" class="admin"><h2><i class="fa-solid fa-user-shield"></i></h2></a>
             {{end}}
@@ -37,7 +39,7 @@
             <h2>Résultats de la recherche :</h2>
             <div class="resultUsers">
                 {{range .SearchUsers}}
-                    <a href="../profil/{{.Username}}">{{.Username}}</a>
+                    <a href="../profil?userId={{.User.Id}}">{{.Username}}</a>
                 {{end}}
             </div>
 

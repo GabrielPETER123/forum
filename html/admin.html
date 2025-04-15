@@ -49,7 +49,7 @@
                 <tbody>
                     {{range .Users}}
                     <tr>
-                        <td>{{.Username}}</td>
+                        <td><a href="/profil?userId={{.User.Id}}">{{.Username}}</a></td>
                     </tr>
                     {{end}}
                 </tbody>

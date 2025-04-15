@@ -16,9 +16,9 @@ type User struct {
 	Posts                 []Post
 	FormattedCreationDate string `gorm:"-"`
 	FormattedUpdatedDate  string `gorm:"-"`
-	TotalVote             uint
-	TotalPost             uint
-	TotalComment          uint
+	TotalVote             uint   `gorm:"-"`
+	TotalPost             uint   `gorm:"-"`
+	TotalComment          uint   `gorm:"-"`
 }
 
 type Post struct {
@@ -35,14 +35,14 @@ type Post struct {
 	Comments              []Comment `gorm:"foreignKey:PostID"`
 	TopicID               uint      `gorm:"not null"`
 	IsLoggedIn            bool      `gorm:"-"`
-	UserConnectedID       string      `gorm:"-"`
+	UserConnectedID       string    `gorm:"-"`
 }
 
 type Vote struct {
 	ID     uint `gorm:"primaryKey"`
 	PostID uint
 	UserID string `gorm:"column:user_id"`
-	User   User `gorm:"foreignKey:UserID;references:Id"`
+	User   User   `gorm:"foreignKey:UserID;references:Id"`
 	Up     int
 	Down   int
 }

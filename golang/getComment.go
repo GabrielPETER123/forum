@@ -32,7 +32,7 @@ func GetCommentByPostID(postID uint) []Comment {
 	return comments
 }
 
-func GetCommentsByUserID(userID int) []Comment {
+func GetCommentsByUserID(userID string) []Comment {
 	// fmt.Println("Opening database connection...")
 	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
 	if err != nil {

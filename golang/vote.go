@@ -70,7 +70,7 @@ func Totals(postID uint) (uint, uint) {
     return uint(upVotes), uint(downVotes)
 }
 
-func TotalVotes(userID uint) uint {
+func TotalVotes(userID string) uint {
 	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
@@ -78,6 +78,7 @@ func TotalVotes(userID uint) uint {
 
 	var totalVotes int64
 
+	//*Compte le nombre de votes de l'utilisateur
 	db.Model(&Vote{}).Where("user_id = ?", userID).Count(&totalVotes)
 
 	return uint(totalVotes)
