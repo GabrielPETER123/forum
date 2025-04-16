@@ -767,9 +767,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
       adminDisplay.Users = golang.GetAllUsers()
       adminDisplay.Posts = golang.GetAllPosts()
       adminDisplay.Topics = golang.GetAllTopics()
-      adminDisplay.Comments = golang.GetAllComments()
-
-      fmt.Println("adminDisplay.Users: ", adminDisplay.Users)
+      adminDisplay.Comments = golang.GetAllComments() 
   }
 
   if r.Method == http.MethodPost {
@@ -916,6 +914,7 @@ func main() {
   http.HandleFunc("/admin", adminHandler)
 
   http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
+  http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	fmt.Println("http://localhost:8080/")
 	http.ListenAndServe(":8080", nil)
 }
