@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="../css/index.css?v=2.0">
+        <link rel="stylesheet" href="../css/index.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
         <title>forum</title>
     </head>
@@ -13,8 +13,52 @@
             <a href="../tendances" class="topics">Topics Tendances</a>
             <a href="../listTopics" class="liste">Liste des Topics</a>
             <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
-            <a href="../profil">Profil Utilisateur</a>
-            <a href="../connexion" class="login"><h2><i class="fa-regular fa-user"></i></h2></a> 
+            {{if .Connected}}
+            <a href="../profil?username={{.Username}}">Profil Utilisateur</a>
+            {{end}}
+            {{if .User.Admin}}
+            <a href="../admin" class="admin"><h2><i class="fa-solid fa-user-shield"></i></h2></a>
+            {{end}}
+            <a href="../connexion" class="login"><h2><i class="fa-regular fa-user"></i></h2></a>
         </div>
+
+        <div class="searchbar">
+            <br><br>
+            
+            <form method="post">
+            <h2>Rechercher un utilisateur, un post ou un topic !</h2>
+            <label for="search">Chercher :</label>
+            <input type="text" name="search" id="search">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
+
+        </div>
+
+        <!-- Recherche -->
+        {{.ErrSearchMessage}}
+        <div class="result">
+            {{if .IsSearch}}
+            <h2>Résultats de la recherche :</h2>
+            <div class="resultUsers">
+                {{range .SearchUsers}}
+                    <a href="../profil?username={{.Username}}">{{.Username}}</a>
+                {{end}}
+            </div>
+
+            <div class="resultPosts">
+                {{range .SearchPosts}}
+                    <a href="../post?postId={{.ID}}">{{.Title}}</a>
+                {{end}}
+            </div>
+
+            <div class="resultTopics">
+                {{range .SearchTopics}}
+                    <a href="../topic?topicId={{.ID}}">{{.Name}}</a>
+                {{end}}
+            </div>
+            {{end}}
+           
+        </div>
+
     </body>
 </html>

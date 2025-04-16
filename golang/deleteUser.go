@@ -1,7 +1,7 @@
 package golang
 
 import (
-	"fmt"
+	// "fmt"
 	"gorm.io/gorm"
 	"gorm.io/driver/sqlite"
 )
@@ -15,7 +15,7 @@ func DeleteUser(nameOrMail string) {
 	// fmt.Println("Database connection opened.")
 
 	//* Suppression de l'utilisateur
-	fmt.Println("Deleting user...")
+	// fmt.Println("Deleting user...")
 	db.Where("Username = ?", nameOrMail).Delete(&User{})
-	fmt.Println("User deleted.")
+	// fmt.Println("User deleted.")
 }

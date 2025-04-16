@@ -6,7 +6,7 @@ import (
 	"gorm.io/driver/sqlite"
 )
 
-func GetUserByID(userID int) User {
+func GetUserByID(userID string) User {
 	// fmt.Println("Opening database connection...")
 	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
 	if err != nil {
@@ -16,7 +16,7 @@ func GetUserByID(userID int) User {
 
 	//* Copie de l'utilisateur
 	var user User
-	db.Where("ID = ?", userID).Find(&user)
+	db.Where("id = ?", userID).Find(&user)
 
 	user.FormattedCreationDate = user.CreatedAt.Format("02 January 2006 15:04")
     user.FormattedUpdatedDate = user.UpdatedAt.Format("02 January 2006 15:04")
@@ -36,4 +36,22 @@ func GetAllUsers() []User {
 	var users []User
 	db.Find(&users)
 	return users
+}
+
+func GetUserByUsername(username string) User {
+	// fmt.Println("Opening database connection...")
+	db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+	// fmt.Println("Database connection opened.")
+
+	//* Copie de l'utilisateur
+	var user User
+	db.Where("username = ?", username).Find(&user)
+
+	user.FormattedCreationDate = user.CreatedAt.Format("02 January 2006 15:04")
+	user.FormattedUpdatedDate = user.UpdatedAt.Format("02 January 2006 15:04")
+
+	return user
 }

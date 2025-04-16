@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetPostsByUserID(userID int) []Post {
+func GetPostsByUserID(userID string) []Post {
     // fmt.Println("Opening database connection...")
     db, err := gorm.Open(sqlite.Open("forum.db"), &gorm.Config{})
     if err != nil {
@@ -65,6 +65,7 @@ func GetAllPosts() []Post {
         posts[i].FormattedCreationDate = posts[i].CreatedAt.Format("02 January 2006 15:04")
         posts[i].FormattedUpdatedDate = posts[i].UpdatedAt.Format("02 January 2006 15:04")
     }
+
 	for i := range posts {
 		posts[i].TotalUp, posts[i].TotalDown = Totals(posts[i].ID)
 	}
@@ -85,7 +86,7 @@ func GetPostsByTopicID(topicID int) []Post {
 	db.Preload("Comments.User").Where("topic_id = ?", topicID).Find(&posts)
 
 	for i := range posts {
-        posts[i].User = GetUserByID(int(posts[i].UserID))
+        posts[i].User = GetUserByID(posts[i].UserID)
     }
 
 	for i := range posts {
@@ -99,4 +100,3 @@ func GetPostsByTopicID(topicID int) []Post {
 	
 	return posts
 }
-

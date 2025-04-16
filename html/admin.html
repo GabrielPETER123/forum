@@ -3,17 +3,18 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="../css/connexion.css">
+        <link rel="stylesheet" href="../css/index.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
         <title>Admin View Page</title>
     </head>
     <body>
+        {{if .UserConnected.Admin}}
         <!-- HEADER -->
         <div class="header">
             <a href="../" class="forum">Forum</a>
-            <a href="../listeTopics" class="topics">Topics Tendances</a>
             <a href="../listeTopics" class="liste">Liste des Topics</a>
             <a href="../actifUser" class="Utilisateurs">Utilisateurs les plus actifs</a>
+            <a href="../connexion" class="login"><h2><i class="fa-regular fa-user"></i></h2></a>
         </div>
 
         <h1>PAGE ADMINISTRATEUR</h1>
@@ -22,6 +23,87 @@
             <input type="search" name="searchUser" id="searchUser" placeholder="Nom de l'utilisateur">
             <button type="submit">Rechercher</button>
 
+            <input type="search" name="searchTopic" id="searchTopic" placeholder="Nom du topic">
+            <button type="submit">Rechercher</button>
+            
+            <input type="search" name="searchPost" id="searchPost" placeholder="Nom du Post">
+            <button type="submit">Rechercher</button>
+            
+            <input type="search" name="searchComment" id="searchComment" placeholder="Contenu du Commentaire">
+            <button type="submit">Rechercher</button>
 
+            <input type="search" name="searchForum" id="searchForum" placeholder="Rechercher dans le Forum">
+            <button type="submit">Rechercher</button>
+
+        </form>
+        {{.ErrAdminMessage}}
+        
+        <h1>Contenue du Forum</h1>
+        
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            {{if .Users}}
+            <table>
+                <thead>
+                    <th>Utilisateurs</th>
+                </thead>
+                <tbody>
+                    {{range .Users}}
+                    <tr>
+                        <td><a href="/profil?username={{.Username}}">{{.Username}}</a></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{end}}
+
+            {{if .Posts}}
+            <table>
+                <thead>
+                    <th>Posts</th>
+                </thead>
+                <tbody>
+                    {{range .Posts}}
+                    <tr>
+                        <td><a href="/post?postId={{.ID}}">{{.Title}}</a></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{end}}
+                
+            {{if .Topics}}
+            <table>
+                <thead>
+                    <th>Topics</th>
+                </thead>
+                <tbody>
+                    {{range .Topics}}
+                    <tr>
+                        <td><a href="/topic?topicId={{.ID}}">{{.Name}}</a></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{end}}
+            
+            {{if .Comments}}
+            <table>
+                <thead>
+                    <th>Commentaires</th>
+                </thead>
+                <tbody>
+                    {{range .Comments}}
+                    <tr>
+                        <td>{{.Text}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{end}}
+        </div>
+
+        {{else}}
+        <h1>Vous n'avez pas accès à cette page</h1>
+        {{end}}
     </body>
 </html>
